@@ -3,116 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud Computing - Fahim</title>
+    <title>Beranda - Cloud Computing</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f7f6;
-            color: #333;
-        }
-        header {
-            background: #2c3e50;
-            color: #ffffff;
-            padding: 2rem 0;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .container {
-            width: 80%;
-            margin: auto;
-            overflow: hidden;
-            padding: 2rem 0;
-        }
-        .info-section {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-        h2 {
-            color: #2980b9;
-            border-bottom: 2px solid #2980b9;
-            padding-bottom: 10px;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-        .card {
-            background: #eef2f3;
-            padding: 15px;
-            border-left: 5px solid #2980b9;
-            border-radius: 4px;
-        }
-        footer {
-            text-align: center;
-            padding: 20px;
-            background: #2c3e50;
-            color: white;
-            margin-top: 20px;
-        }
-        .highlight {
-            font-weight: bold;
-            color: #e67e22;
-        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.6; margin: 0; background: #f4f7f6; color: #333; }
+        header { background: #2c3e50; color: #fff; padding: 1.5rem 0; text-align: center; }
+        nav { background: #34495e; text-align: center; padding: 10px 0; }
+        nav a { color: white; text-decoration: none; padding: 10px 20px; margin: 0 5px; border-radius: 4px; font-weight: bold; transition: 0.3s; }
+        nav a:hover, nav a.active { background: #2980b9; }
+        .container { width: 80%; margin: 20px auto; }
+        .info-section { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { color: #2980b9; border-bottom: 2px solid #2980b9; padding-bottom: 5px; }
+        footer { text-align: center; padding: 15px; background: #2c3e50; color: white; margin-top: 20px; }
     </style>
 </head>
 <body>
 
     <header>
         <h1>Mengenal Cloud Computing</h1>
-        <p>Teknologi yang Mengubah Cara Dunia Mengelola Data</p>
+        <p>Masa Depan Infrastruktur IT</p>
     </header>
 
+    <nav>
+        <a href="index.html" class="active">Beranda</a>
+        <a href="layanan.html">Layanan Cloud</a>
+        <a href="profil.html">Profil Penulis</a>
+    </nav>
+
     <div class="container">
-        
         <div class="info-section">
-            <h2>Apa itu Cloud Computing?</h2>
-            <p>Secara sederhana, <strong>Cloud Computing</strong> adalah pengiriman berbagai layanan melalui internet. Sumber daya ini mencakup alat dan aplikasi seperti penyimpanan data, server, database, jaringan, dan perangkat lunak.</p>
+            <h2>Selamat Datang</h2>
+            <p><strong>Cloud Computing</strong> atau komputasi awan adalah metode penyampaian berbagai layanan melalui internet. Mulai dari penyimpanan data, server, database, hingga perangkat lunak, semuanya bisa diakses tanpa harus mengelola infrastruktur fisiknya secara langsung.</p>
+            <p>Website sederhana ini dibuat untuk merangkum konsep dasar Cloud Computing, jenis-jenis layanannya, dan keuntungannya bagi dunia IT modern.</p>
         </div>
 
         <div class="info-section">
-            <h2>Kenapa Cloud Computing Menarik?</h2>
-            <div class="grid">
-                <div class="card">
-                    <h3>On-Demand Self-Service</h3>
-                    <p>Pengguna dapat memesan dan mengelola layanan secara otomatis tanpa interaksi manusia dengan penyedia layanan.</p>
-                </div>
-                <div class="card">
-                    <h3>Scalability</h3>
-                    <p>Kapasitas bisa ditambah atau dikurangi dalam hitungan detik sesuai kebutuhan trafik aplikasi kita.</p>
-                </div>
-                <div class="card">
-                    <h3>Pay-as-you-go</h3>
-                    <p>Kita hanya membayar apa yang kita gunakan. Tidak perlu investasi besar di awal untuk hardware fisik.</p>
-                </div>
-                <div class="card">
-                    <h3>Global Reach</h3>
-                    <p>Aplikasi bisa di-deploy ke seluruh dunia hanya dengan beberapa klik saja.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="info-section">
-            <h2>Tipe Layanan Cloud</h2>
+            <h2>Karakteristik Utama</h2>
             <ul>
-                <li><span class="highlight">IaaS</span> (Infrastructure as a Service) - Contoh: AWS EC2, Google Compute Engine.</li>
-                <li><span class="highlight">PaaS</span> (Platform as a Service) - Contoh: Heroku, Google App Engine.</li>
-                <li><span class="highlight">SaaS</span> (Software as a Service) - Contoh: Google Drive, Microsoft 365.</li>
+                <li><strong>On-Demand Self-Service:</strong> Kapasitas IT disediakan secara otomatis.</li>
+                <li><strong>Broad Network Access:</strong> Bisa diakses dari mana saja melalui internet.</li>
+                <li><strong>Resource Pooling:</strong> Sumber daya dikumpulkan untuk melayani banyak konsumen.</li>
+                <li><strong>Rapid Elasticity:</strong> Fleksibel, bisa ditambah atau dikurangi dengan cepat.</li>
+                <li><strong>Measured Service:</strong> Sistem berbayar sesuai pemakaian (pay-as-you-go).</li>
             </ul>
         </div>
-
     </div>
 
     <footer>
-        <p>Dibuat oleh: <strong>Muhamad Fahim</strong></p>
-        <p>NIM: <strong>241011402776</strong></p>
-        <p>&copy; 2026 Cloud Computing UNPAM</p>
+        <p>&copy; 2026 Tugas Web IT Support - Muhamad Fahim</p>
     </footer>
 
 </body>
