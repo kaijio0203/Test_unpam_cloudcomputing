@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Grafika Komputer: Algoritma Pewarnaan Bidang</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f7f9fc;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+        }
+        h2, h3 {
+            color: #004085;
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #a8cde0;
+            padding-bottom: 10px;
+        }
+        .section {
+            background: #fdfefe;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid #d0e6f8;
+        }
+        .section h3 {
+            color: #0056b3;
+            text-align: left;
+            border-bottom: 1px solid #e0f0ff;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="number"], select {
+            padding: 8px;
+            border: 1px solid #cce0f0;
+            border-radius: 5px;
+            margin-right: 5px;
+        }
+        input[type="text"] {
+             text-align: left;
+        }
+        button {
+            padding: 10px 18px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #218838;
+            transform: translateY(-1px);
+        }
+        button.secondary {
+             background-color: #6c757d;
+        }
+        button.secondary:hover {
+            background-color: #5a6268;
+        }
+        canvas {
+            border: 2px solid #aaa;
+            background-color: #fdfdfd;
+            display: block;
+            margin: 20px auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        .output-box {
+            background: #e9f0f7;
+            border: 1px solid #cce0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 0.9em;
+        }
+        .controls-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .controls-container div {
+            padding: 10px;
+            border: 1px dashed #e0f0ff;
+            border-radius: 8px;
+        }
+        .controls-container input {
+            width: calc(100% - 20px);
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Grafika Komputer: Algoritma Pewarnaan Bidang</h2>
+
+        <div class="section">
+            <h3>1. Pengertian Pewarnaan Graf</h3>
+            <p>
+                Pewarnaan graf adalah masalah khusus pelabelan graf, yaitu penugasan label (disebut "corak" atau "warna") pada elemen grafik dengan batasan tertentu.
+                Jenis-jenis pewarnaan graf meliputi:
+                <ul>
+                    <li>**Pewarnaan Simpul (Vertex Coloring):** Memberi warna pada simpul-simpul suatu graf sedemikian rupa sehingga tidak ada dua simpul yang bertetangga memiliki warna yang sama.</li>
+                    <li>**Pewarnaan Tepi (Edge Coloring):** Menetapkan warna ke setiap tepi sehingga tidak ada dua tepi yang bersebelahan (berbagi simpul yang sama) memiliki warna yang sama.</li>
+                    <li>**Pewarnaan Daerah (Region Coloring):** Menetapkan warna ke setiap wilayah atau daerah pada bagan datar sehingga tidak ada dua wilayah yang berbagi sisi bersama memiliki warna yang sama.</li>
+                </ul>
+            </p>
+        </div>
+
+        <div class="section">
+            <h3>2. Simulasi Pewarnaan Simpul (Welch-Powell Konseptual)</h3>
+            <p>
+                Algoritma Welch-Powell adalah metode untuk memberi warna pada graf. Langkah-langkahnya meliputi mengurutkan simpul berdasarkan derajat yang menurun, lalu secara berurutan memberi warna pada simpul-simpul yang tidak bertetangga dengan warna yang sama, hingga semua simpul terwarnai.
+            </p>
+            <div class="controls-container">
+                <div>
+                    <label for="nodesInput">Simpul (pisahkan koma, misal: A,B,C):</label>
+                    <input type="text" id="nodesInput" value="A,B,C,D,E">
+                    <label for="edgesInput">Tepi (pasangan, misal: A-B,B-C,C-A):</label>
+                    <input type="text" id="edgesInput" value="A-B,B-C,C-D,D-E,E-A">
+                    <button onclick="initializeGraph()">Inisialisasi Graf</button>
+                </div>
+                <div>
+                    <label>Pilih Warna untuk Langkah Berikutnya:</label>
+                    <select id="colorSelect">
+                        <option value="#E6194B">Merah</option>
+                        <option value="#3CB44B">Hijau</option>
+                        <option value="#4363D8">Biru</option>
+                        <option value="#FFE119">Kuning</option>
+                        <option value="#F58231">Oranye</option>
+                        <option value="#911EB4">Ungu</option>
+                    </select>
+                    <button onclick="applyWelchPowellStep()">Langkah Welch-Powell</button>
+                    <button onclick="resetGraph()" class="secondary">Reset Graf</button>
+                </div>
+            </div>
+            <canvas id="graphCanvas" width="600" height="400"></canvas>
+            <div class="output-box" id="graphOutput">
+                Status Graf: Belum diinisialisasi.
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>3. Simulasi Pewarnaan Wilayah/Region</h3>
+            <p>
+                Masalah pewarnaan region dapat dikonversi ke masalah pewarnaan simpul dengan membangun "graf dual". Pada graf dual, setiap region menjadi sebuah simpul, dan dua simpul dihubungkan jika region aslinya bertetangga. Simulasi ini akan menunjukkan proses tersebut secara otomatis.
+            </p>
+            <div style="text-align:center;">
+                 <button onclick="runRegionSimulation()">Mulai Simulasi Pewarnaan</button>
+                 <button onclick="resetRegionSimulation()" class="secondary">Reset Simulasi</button>
+            </div>
+            <canvas id="regionCanvas" width="600" height="400"></canvas>
+            <div class="output-box" id="regionOutput">
+                Klik "Mulai Simulasi Pewarnaan" untuk melihat prosesnya.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === BAGIAN 2: KONTROL GRAF SIMPUL ===
+        const graphCanvas = document.getElementById("graphCanvas");
+        const graphCtx = graphCanvas.getContext("2d");
+        const nodesInputElement = document.getElementById("nodesInput");
+        const edgesInputElement = document.getElementById("edgesInput");
+        const graphOutputElement = document.getElementById("graphOutput");
+        const colorSelectElement = document.getElementById("colorSelect");
+
+        let nodes = {}; 
+        let edges = [];
+        let colorMap = {};
+
+        document.querySelectorAll('#colorSelect option').forEach(option => {
+            colorMap[option.value] = option.textContent;
+        });
+        
+        function validateGraphInputs() {
+            nodesInputElement.setCustomValidity('');
+            edgesInputElement.setCustomValidity('');
+
+            const nodeNames = nodesInputElement.value.split(',').map(s => s.trim()).filter(s => s);
+            if (nodeNames.length === 0) {
+                nodesInputElement.setCustomValidity('Input simpul tidak boleh kosong.');
+                nodesInputElement.reportValidity();
+                return false;
+            }
+            const nodeSet = new Set(nodeNames);
+            if (nodeSet.size !== nodeNames.length) {
+                nodesInputElement.setCustomValidity('Nama simpul tidak boleh duplikat.');
+                nodesInputElement.reportValidity();
+                return false;
+            }
+
+            const edgePairs = edgesInputElement.value.split(',').map(s => s.trim()).filter(s => s);
+            if (edgePairs.length === 0) {
+                edgesInputElement.setCustomValidity('Input tepi tidak boleh kosong.');
+                edgesInputElement.reportValidity();
+                return false;
+            }
+
+            for (const edgeStr of edgePairs) {
+                const parts = edgeStr.split('-');
+                if (parts.length !== 2 || !parts[0] || !parts[1]) {
+                    edgesInputElement.setCustomValidity(`Format tepi tidak valid: "${edgeStr}". Gunakan format "Simpul1-Simpul2".`);
+                    edgesInputElement.reportValidity();
+                    return false;
+                }
+                const [from, to] = parts;
+                if (!nodeSet.has(from)) {
+                    edgesInputElement.setCustomValidity(`Tepi "${edgeStr}" tidak valid karena simpul "${from}" tidak ada.`);
+                    edgesInputElement.reportValidity();
+                    return false;
+                }
+                if (!nodeSet.has(to)) {
+                    edgesInputElement.setCustomValidity(`Tepi "${edgeStr}" tidak valid karena simpul "${to}" tidak ada.`);
+                    edgesInputElement.reportValidity();
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function drawGraph() {
+            graphCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+            graphCtx.strokeStyle = "#888";
+            graphCtx.lineWidth = 2;
+            edges.forEach(edge => {
+                const fromNode = nodes[edge.from];
+                const toNode = nodes[edge.to];
+                if (fromNode && toNode) {
+                    graphCtx.beginPath();
+                    graphCtx.moveTo(fromNode.x, fromNode.y);
+                    graphCtx.lineTo(toNode.x, toNode.y);
+                    graphCtx.stroke();
+                }
+            });
+
+            graphCtx.font = "bold 14px Arial";
+            graphCtx.textAlign = "center";
+            graphCtx.textBaseline = "middle";
+            for (const nodeName in nodes) {
+                const node = nodes[nodeName];
+                graphCtx.beginPath();
+                graphCtx.arc(node.x, node.y, 18, 0, 2 * Math.PI);
+                graphCtx.fillStyle = node.color || "#E0E0E0";
+                graphCtx.fill();
+                graphCtx.strokeStyle = "#333";
+                graphCtx.lineWidth = 2;
+                graphCtx.stroke();
+                const textColor = (node.color === "#4363D8" || node.color === "#911EB4") ? "white" : "black";
+                graphCtx.fillStyle = textColor;
+                graphCtx.fillText(nodeName, node.x, node.y);
+            }
+        }
+
+        function initializeGraph() {
+            if (!validateGraphInputs()) return;
+
+            nodes = {};
+            edges = [];
+            const nodeNames = new Set(nodesInputElement.value.split(',').map(s => s.trim()).filter(s => s));
+            const edgePairs = edgesInputElement.value.split(',').map(s => s.trim()).filter(s => s);
+            const canvasWidth = graphCanvas.width;
+            const canvasHeight = graphCanvas.height;
+            const padding = 50;
+
+            nodeNames.forEach(name => {
+                nodes[name] = {
+                    name: name,
+                    x: Math.random() * (canvasWidth - 2 * padding) + padding,
+                    y: Math.random() * (canvasHeight - 2 * padding) + padding,
+                    color: null,
+                    neighbors: new Set(),
+                    degree: 0
+                };
+            });
+
+            edgePairs.forEach(edgeStr => {
+                const parts = edgeStr.split('-');
+                const [from, to] = parts;
+                if (nodes[from] && nodes[to]) {
+                    edges.push({ from, to });
+                    nodes[from].neighbors.add(to);
+                    nodes[to].neighbors.add(from);
+                }
+            });
+
+            for (const nodeName in nodes) {
+                nodes[nodeName].degree = nodes[nodeName].neighbors.size;
+            }
+
+            graphOutputElement.textContent = "Graf berhasil diinisialisasi. Silakan pilih warna dan klik 'Langkah Welch-Powell'.";
+            drawGraph();
+        }
+
+        function applyWelchPowellStep() {
+            if (Object.keys(nodes).length === 0) {
+                graphOutputElement.textContent = "Graf belum diinisialisasi. Klik 'Inisialisasi Graf' terlebih dahulu.";
+                return;
+            }
+            const uncoloredNodes = Object.values(nodes).filter(node => node.color === null);
+            if (uncoloredNodes.length === 0) {
+                graphOutputElement.textContent = "Semua simpul sudah berhasil diwarnai!";
+                return;
+            }
+
+            const selectedColor = colorSelectElement.value;
+            const selectedColorName = colorMap[selectedColor];
+            uncoloredNodes.sort((a, b) => b.degree - a.degree);
+
+            const nodesToColorThisStep = [];
+            for (const node of uncoloredNodes) {
+                let isNeighborWithColoredNode = false;
+                for (const coloredNodeName of nodesToColorThisStep) {
+                    if (node.neighbors.has(coloredNodeName)) {
+                        isNeighborWithColoredNode = true;
+                        break;
+                    }
+                }
+                if (!isNeighborWithColoredNode) {
+                    nodesToColorThisStep.push(node.name);
+                }
+            }
+
+            if (nodesToColorThisStep.length > 0) {
+                nodesToColorThisStep.forEach(nodeName => {
+                    nodes[nodeName].color = selectedColor;
+                });
+                graphOutputElement.textContent = `Langkah ini menggunakan warna ${selectedColorName.toUpperCase()} untuk mewarnai simpul: ${nodesToColorThisStep.join(', ')}.`;
+            } else {
+                 graphOutputElement.textContent = `Tidak ada simpul yang bisa diwarnai dengan ${selectedColorName.toUpperCase()} pada langkah ini karena semua simpul yang tersisa bertetangga. Coba gunakan warna baru.`;
+            }
+            
+            drawGraph();
+            const remainingCount = Object.values(nodes).filter(node => node.color === null).length;
+            if (remainingCount === 0) {
+                graphOutputElement.textContent += "\n\nSelamat! Semua simpul telah diwarnai.";
+            } else {
+                graphOutputElement.textContent += `\nSisa simpul yang belum diwarnai: ${remainingCount}.`;
+            }
+        }
+
+        function resetGraph() {
+            if (Object.keys(nodes).length === 0) return;
+            for (const nodeName in nodes) {
+                nodes[nodeName].color = null;
+            }
+            graphOutputElement.textContent = "Graf direset, semua warna dihapus. Siap untuk diwarnai ulang.";
+            drawGraph();
+        }
+
+        // === BAGIAN 3: SIMULASI PEWARNAAN REGION ===
+        const regionCanvas = document.getElementById("regionCanvas");
+        const regionCtx = regionCanvas.getContext("2d");
+        const regionOutputElement = document.getElementById("regionOutput");
+        
+        const regionDefs = {
+            'R1': { name: 'R1', x: 300, y: 200, shape: 'poly', points: [[250,150],[350,150],[350,250],[250,250]], neighbors: ['R2','R3','R4','R5'], color: null },
+            'R2': { name: 'R2', x: 300, y: 75, shape: 'poly', points: [[200,20],[400,20],[350,150],[250,150]], neighbors: ['R1', 'R3', 'R5'], color: null },
+            'R3': { name: 'R3', x: 475, y: 200, shape: 'poly', points: [[580,100],[580,300],[400,250],[400,150]], neighbors: ['R1', 'R2', 'R4'], color: null },
+            'R4': { name: 'R4', x: 300, y: 325, shape: 'poly', points: [[250,250],[350,250],[400,380],[200,380]], neighbors: ['R1', 'R3', 'R5'], color: null },
+            'R5': { name: 'R5', x: 125, y: 200, shape: 'poly', points: [[20,100],[200,150],[200,250],[20,300]], neighbors: ['R1', 'R2', 'R4'], color: null }
+        };
+
+        function drawRegionMap(showDualGraph = false) {
+            regionCtx.clearRect(0, 0, regionCanvas.width, regionCanvas.height);
+            regionCtx.lineWidth = 2;
+            regionCtx.font = "bold 16px Arial";
+            regionCtx.textAlign = "center";
+            regionCtx.textBaseline = "middle";
+
+            // Draw regions
+            for (const rName in regionDefs) {
+                const region = regionDefs[rName];
+                regionCtx.beginPath();
+                regionCtx.moveTo(region.points[0][0], region.points[0][1]);
+                for (let i = 1; i < region.points.length; i++) {
+                    regionCtx.lineTo(region.points[i][0], region.points[i][1]);
+                }
+                regionCtx.closePath();
+                
+                regionCtx.fillStyle = region.color || 'rgba(224, 224, 224, 0.7)'; // Default grey
+                regionCtx.fill();
+                regionCtx.strokeStyle = '#333';
+                regionCtx.stroke();
+
+                regionCtx.fillStyle = 'black';
+                regionCtx.fillText(region.name, region.x, region.y);
+            }
+            
+            if (showDualGraph) {
+                regionCtx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+                regionCtx.lineWidth = 3;
+                regionCtx.setLineDash([5, 5]);
+                for(const rName in regionDefs) {
+                    const region = regionDefs[rName];
+                    region.neighbors.forEach(neighborName => {
+                        const neighbor = regionDefs[neighborName];
+                        if (rName < neighborName) {
+                             regionCtx.beginPath();
+                             regionCtx.moveTo(region.x, region.y);
+                             regionCtx.lineTo(neighbor.x, neighbor.y);
+                             regionCtx.stroke();
+                        }
+                    });
+                }
+                regionCtx.setLineDash([]);
+
+                for (const rName in regionDefs) {
+                    const region = regionDefs[rName];
+                    regionCtx.beginPath();
+                    regionCtx.arc(region.x, region.y, 10, 0, 2*Math.PI);
+                    regionCtx.fillStyle = region.color || '#666';
+                    regionCtx.fill();
+                    regionCtx.strokeStyle = 'white';
+                    regionCtx.lineWidth = 2;
+                    regionCtx.stroke();
+                }
+            }
+        }
+        
+        function solveAndColorRegions() {
+            let dualNodes = {};
+            for(const rName in regionDefs){
+                dualNodes[rName] = {
+                    name: rName,
+                    color: null,
+                    neighbors: new Set(regionDefs[rName].neighbors),
+                    degree: regionDefs[rName].neighbors.length
+                };
+            }
+            
+            // --- PERBAIKAN DI SINI ---
+            let sortedNodes = Object.values(dualNodes).sort((a, b) => b.degree - a.degree);
+            let colors = Object.keys(colorMap);
+            let colorIndex = 0;
+            let totalColored = 0;
+            
+            while(totalColored < sortedNodes.length) {
+                const currentColor = colors[colorIndex % colors.length];
+                for(const node of sortedNodes) {
+                    if (node.color === null) {
+                        let isNeighborColored = false;
+                        node.neighbors.forEach(neighborName => {
+                            if (dualNodes[neighborName].color === currentColor) {
+                                isNeighborColored = true;
+                            }
+                        });
+                        if (!isNeighborColored) {
+                            node.color = currentColor;
+                            totalColored++;
+                        }
+                    }
+                }
+                colorIndex++;
+            }
+            
+            for(const rName in dualNodes) {
+                regionDefs[rName].color = dualNodes[rName].color;
+            }
+            
+            return colorIndex;
+        }
+
+        function runRegionSimulation() {
+            resetRegionSimulation();
+            regionOutputElement.textContent = '1. Peta wilayah awal digambar.';
+            
+            setTimeout(() => {
+                drawRegionMap(true);
+                regionOutputElement.textContent += '\n2. Graf dual dibuat. Setiap wilayah menjadi simpul (titik), dan garis putus-putus menunjukkan ketetanggaan.';
+            }, 1000);
+            
+            setTimeout(() => {
+                const colorsUsed = solveAndColorRegions();
+                drawRegionMap(true);
+                regionOutputElement.textContent += `\n3. Algoritma pewarnaan diterapkan pada graf dual. Wilayah diwarnai sesuai hasilnya.`;
+                regionOutputElement.textContent += `\n\nHASIL: Pewarnaan berhasil diselesaikan dengan menggunakan ${colorsUsed} warna.`;
+            }, 2000);
+        }
+
+        function resetRegionSimulation() {
+            for(const rName in regionDefs) {
+                regionDefs[rName].color = null;
+            }
+            drawRegionMap(false);
+            regionOutputElement.textContent = 'Simulasi direset. Klik "Mulai Simulasi Pewarnaan" untuk melihat prosesnya.';
+        }
+
+        // === INISIALISASI HALAMAN ===
+        document.addEventListener("DOMContentLoaded", function() {
+            initializeGraph();
+            resetRegionSimulation();
+            nodesInputElement.addEventListener('input', validateGraphInputs);
+            edgesInputElement.addEventListener('input', validateGraphInputs);
+        });
+    </script>
+</body>
+</html>

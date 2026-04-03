@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Grafika Komputer: Algoritma Lingkaran dan Elips</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #e8f0f7;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+        }
+        h2, h3 {
+            color: #004085;
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #a8cde0;
+            padding-bottom: 10px;
+        }
+        .section {
+            background: #f8fcff;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid #d0e6f8;
+        }
+        .section h3 {
+            color: #0056b3;
+            text-align: left;
+            border-bottom: 1px solid #e0f0ff;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        input[type="number"] {
+            width: 70px;
+            padding: 8px;
+            border: 1px solid #cce0f0;
+            border-radius: 5px;
+            text-align: center;
+            margin-right: 5px;
+        }
+        button {
+            padding: 10px 18px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-1px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        canvas {
+            border: 2px solid #aaa;
+            background-color: #fdfdfd;
+            display: block;
+            margin: 20px auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        .output-box {
+            background: #e9f0f7;
+            border: 1px solid #cce0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 0.9em;
+        }
+        .algorithm-select {
+            margin-bottom: 15px;
+        }
+        .algorithm-select select {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #cce0f0;
+        }
+        pre {
+            background-color: #f0f4f7;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: #555;
+            border: 1px solid #dee9f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Grafika Komputer: Algoritma Lingkaran dan Elips</h2>
+
+        <div class="section">
+            <h3>1. Algoritma Pembentukan Lingkaran</h3>
+            <p>
+                Lingkaran adalah kumpulan titik-titik yang memiliki jarak yang sama dari titik pusatnya. Penggambaran lingkaran sering dimulai dengan menggambar seperempat lingkaran dan memanfaatkan simetri.
+            </p>
+            <p>
+                Persamaan lingkaran dengan pusat (x_p, y_p) dan jari-jari r adalah:
+                <pre>(x-x_p)^2 + (y-y_p)^2 = r^2</pre>
+                Atau untuk y:
+                <pre>y = y_p \pm \sqrt{r^2 - (x-x_p)^2}</pre>
+                Pendekatan langsung (Brute Force) menggunakan persamaan ini memerlukan operasi perkalian, akar kuadrat (SQRT), dan pembulatan (ROUND) yang mahal. Ini juga dapat menghasilkan *gap* piksel karena perubahan gradien. 
+            </p>
+
+            <h4>Algoritma Midpoint Circle (Bresenham's Circle Algorithm)</h4>
+            <p>
+                Algoritma Midpoint lebih efisien karena menghindari operasi floating-point. Ia memanfaatkan simetri delapan titik lingkaran. Sebuah lingkaran dibagi menjadi delapan oktan (masing-masing $45^\circ$). Dengan menghitung piksel di satu oktan (misalnya dari $x=0$ hingga $x=y$ di oktan pertama), tujuh titik simetri lainnya dapat ditentukan secara otomatis. 
+            </p>
+            <div class="input-group">
+                <label>Pusat (Cx, Cy): <input type="number" id="circleCx" value="250" min="0" max="450"> <input type="number" id="circleCy" value="175" min="0" max="300"></label>
+                <label>Jari-jari (R): <input type="number" id="circleR" value="100" min="10" max="150"></label>
+                <div class="algorithm-select">
+                    <label for="circleAlgorithm">Pilih Algoritma Lingkaran:</label>
+                    <select id="circleAlgorithm">
+                        <option value="directEquation">Persamaan Langsung (Brute Force)</option>
+                        <option value="midpoint">Midpoint Circle Algorithm</option>
+                    </select>
+                </div>
+                <button onclick="drawCircle()">Gambar Lingkaran</button>
+                <button onclick="clearCanvas('circleCanvas')">Bersihkan</button>
+            </div>
+            <canvas id="circleCanvas" width="500" height="350"></canvas>
+            <div class="output-box" id="circleOutput">
+                Piksel yang digambar akan muncul di sini.
+            </div>
+
+            <pre>
+Prinsip Midpoint Circle Algorithm (untuk pusat (0,0)):
+1.  Pilih jari-jari r dan titik pusat (xp, yp).
+2.  Titik awal: (0, r).
+3.  Hitung parameter keputusan awal: p0 = 1 - r (jika r integer) atau p0 = 5/4 - r (jika r pecahan). 
+4.  Jika pk < 0, titik berikutnya adalah (xk+1, yk). pk+1 = pk + 2xk+1 + 1. 
+5.  Jika pk >= 0, titik berikutnya adalah (xk+1, yk-1). pk+1 = pk + 2xk+1 + 1 - 2yk+1. 
+6.  Gunakan simetri delapan titik untuk memplot semua piksel. 
+7.  Ulangi hingga x >= y.
+8.  Geser piksel ke pusat (xp, yp): x = x + xp, y = y + yp. 
+            </pre>
+        </div>
+
+        <div class="section">
+            <h3>2. Algoritma Pembentukan Elips</h3>
+            <p>
+                Elips adalah modifikasi dari lingkaran dengan penambahan sumbu minor (r_y) dan sumbu mayor (r_x). Persamaan elips dengan pusat (x_c, y_c) adalah:
+                <pre>((x-x_c)/r_x)^2 + ((y-y_c)/r_y)^2 = 1</pre>
+                Algoritma Midpoint juga dapat digunakan untuk elips, dibagi menjadi dua bagian berdasarkan kemiringan (slope) dan memanfaatkan simetri empat kuadran. 
+            </p>
+
+            <h4>Algoritma Midpoint Ellipse</h4>
+            <p>
+                Mirip dengan algoritma lingkaran, algoritma ini menggunakan parameter keputusan untuk memilih piksel berikutnya, memanfaatkan simetri untuk mengurangi perhitungan.
+            </p>
+            <div class="input-group">
+                <label>Pusat (Cx, Cy): <input type="number" id="ellipseCx" value="250" min="0" max="450"> <input type="number" id="ellipseCy" value="175" min="0" max="300"></label>
+                <label>Sumbu Mayor (Rx): <input type="number" id="ellipseRx" value="120" min="10" max="200"></label>
+                <label>Sumbu Minor (Ry): <input type="number" id="ellipseRy" value="60" min="10" max="150"></label>
+                <button onclick="drawEllipse()">Gambar Elips</button>
+                <button onclick="clearCanvas('ellipseCanvas')">Bersihkan</button>
+            </div>
+            <canvas id="ellipseCanvas" width="500" height="350"></canvas>
+            <div class="output-box" id="ellipseOutput">
+                Piksel yang digambar akan muncul di sini.
+            </div>
+            <pre>
+Prinsip Midpoint Ellipse Algorithm (untuk pusat (0,0)):
+1. Tentukan sumbu mayor rx, sumbu minor ry, dan pusat (xc, yc).
+2. Mulai dari titik (0, ry). 
+3. Region 1 (slope < 1):
+   Parameter keputusan awal: p1_0 = ry^2 - rx^2 * ry + 1/4 * rx^2. 
+   Jika p1k < 0, titik berikutnya (xk+1, yk). p1_k+1 = p1_k + 2ry^2 * xk+1 + ry^2. 
+   Jika p1k >= 0, titik berikutnya (xk+1, yk-1). p1_k+1 = p1_k + 2ry^2 * xk+1 - 2rx^2 * yk+1 + ry^2. 
+   Iterasi sampai 2ry^2 * x >= 2rx^2 * y. 
+4. Region 2 (slope > 1):
+   Parameter keputusan awal dihitung dari titik akhir Region 1.
+   Jika p2k > 0, titik berikutnya (xk, yk-1). p2_k+1 = p2_k + 2rx^2 * yk+1 + rx^2. 
+   Jika p2k <= 0, titik berikutnya (xk+1, yk-1). p2_k+1 = p2_k + 2ry^2 * xk+1 - 2rx^2 * yk+1 + ry^2. 
+   Iterasi sampai y = 0.
+5. Gunakan simetri empat kuadran (x,y), (-x,y), (x,-y), (-x,-y) untuk memplot semua piksel.
+6. Geser piksel ke pusat (xc, yc): x = x + xc, y = y + yc. 
+            </pre>
+        </div>
+    </div>
+
+    <script>
+        // --- FUNGSI VALIDASI BARU (seperti Materi 3) ---
+        function validateInput(inputElement) {
+            const value = parseInt(inputElement.value);
+            const min = parseInt(inputElement.min);
+            const max = parseInt(inputElement.max);
+
+            if (isNaN(value)) {
+                inputElement.setCustomValidity('Harap masukkan angka.');
+                return false;
+            } else if (value < min || value > max) {
+                inputElement.setCustomValidity(`Nilai harus antara ${min} dan ${max}.`);
+                return false;
+            } else {
+                inputElement.setCustomValidity(''); // Hapus pesan error jika valid
+                return true;
+            }
+        }
+
+        // Tambahkan event listener untuk validasi real-time
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', function() {
+                validateInput(this);
+            });
+        });
+        
+        // --- FUNGSI HELPER ---
+        function drawPixel(ctx, x, y, color = "black", size = 2) {
+            const transformedY = ctx.canvas.height - y;
+            ctx.fillStyle = color;
+            ctx.fillRect(x, transformedY, size, size);
+        }
+
+        function drawCenterPoint(ctx, x, y, label, color = "red", size = 5) {
+            const transformedY = ctx.canvas.height - y;
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, transformedY, size, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillStyle = "black";
+            ctx.fillText(label, x + size + 2, transformedY + size / 2);
+        }
+
+        function clearCanvas(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById(canvasId.replace('Canvas', 'Output')).textContent = 'Piksel yang digambar akan muncul di sini.';
+        }
+
+        // --- 1. Algoritma Pembentukan Lingkaran ---
+        const circleCanvas = document.getElementById("circleCanvas");
+        const circleCtx = circleCanvas.getContext("2d");
+        const circleOutput = document.getElementById("circleOutput");
+
+        function drawCircle() {
+            // Validasi Input saat tombol ditekan
+            const cxInput = document.getElementById('circleCx');
+            const cyInput = document.getElementById('circleCy');
+            const rInput = document.getElementById('circleR');
+            
+            // Lakukan validasi dan tampilkan notifikasi jika salah
+            if (!validateInput(cxInput)) { cxInput.reportValidity(); return; }
+            if (!validateInput(cyInput)) { cyInput.reportValidity(); return; }
+            if (!validateInput(rInput)) { rInput.reportValidity(); return; }
+
+            // Jika valid, ambil nilainya
+            const cx = parseInt(cxInput.value);
+            const cy = parseInt(cyInput.value);
+            const r = parseInt(rInput.value);
+
+            clearCanvas('circleCanvas');
+            const algorithm = document.getElementById("circleAlgorithm").value;
+
+            drawCenterPoint(circleCtx, cx, cy, `Pusat (${cx},${cy})`);
+            let pixelsDrawn = [];
+
+            if (algorithm === "directEquation") {
+                drawCircleDirectEquation(cx, cy, r, pixelsDrawn);
+            } else if (algorithm === "midpoint") {
+                drawCircleMidpoint(cx, cy, r, pixelsDrawn);
+            }
+            
+            circleOutput.textContent = `Piksel yang digambar (${pixelsDrawn.length}):\n` + 
+                                       pixelsDrawn.map(p => `(${p.x},${p.y})`).join(', ');
+        }
+
+        function plotCirclePoints(ctx, cx, cy, x, y, pixelsDrawn) {
+            drawPixel(ctx, cx + x, cy + y, 'blue'); pixelsDrawn.push({x:cx+x, y:cy+y});
+            drawPixel(ctx, cx - x, cy + y, 'blue'); pixelsDrawn.push({x:cx-x, y:cy+y});
+            drawPixel(ctx, cx + x, cy - y, 'blue'); pixelsDrawn.push({x:cx+x, y:cy-y});
+            drawPixel(ctx, cx - x, cy - y, 'blue'); pixelsDrawn.push({x:cx-x, y:cy-y});
+            drawPixel(ctx, cx + y, cy + x, 'blue'); pixelsDrawn.push({x:cx+y, y:cy+x});
+            drawPixel(ctx, cx - y, cy + x, 'blue'); pixelsDrawn.push({x:cx-y, y:cy+x});
+            drawPixel(ctx, cx + y, cy - x, 'blue'); pixelsDrawn.push({x:cx+y, y:cy-x});
+            drawPixel(ctx, cx - y, cy - x, 'blue'); pixelsDrawn.push({x:cx-y, y:cy-x});
+        }
+
+        function drawCircleDirectEquation(cx, cy, r, pixelsDrawn) {
+            for (let x = 0; x <= r; x++) {
+                const y = Math.sqrt(r * r - x * x);
+                plotCirclePoints(circleCtx, cx, cy, x, Math.round(y), pixelsDrawn);
+            }
+            circleCtx.beginPath();
+            circleCtx.arc(cx, circleCtx.canvas.height - cy, r, 0, 2 * Math.PI);
+            circleCtx.strokeStyle = "rgba(0, 0, 255, 0.3)";
+            circleCtx.lineWidth = 1;
+            circleCtx.stroke();
+        }
+
+        function drawCircleMidpoint(cx, cy, r, pixelsDrawn) {
+            let x = 0;
+            let y = r;
+            let p = 1 - r; 
+
+            plotCirclePoints(circleCtx, cx, cy, x, y, pixelsDrawn);
+
+            while (x < y) {
+                x++;
+                if (p < 0) {
+                    p = p + 2 * x + 1;
+                } else {
+                    y--;
+                    p = p + 2 * x + 1 - 2 * y;
+                }
+                plotCirclePoints(circleCtx, cx, cy, x, y, pixelsDrawn);
+            }
+            circleCtx.beginPath();
+            circleCtx.arc(cx, circleCtx.canvas.height - cy, r, 0, 2 * Math.PI);
+            circleCtx.strokeStyle = "rgba(0, 0, 255, 0.8)";
+            circleCtx.lineWidth = 1;
+            circleCtx.stroke();
+        }
+
+        // --- 2. Algoritma Pembentukan Elips ---
+        const ellipseCanvas = document.getElementById("ellipseCanvas");
+        const ellipseCtx = ellipseCanvas.getContext("2d");
+        const ellipseOutput = document.getElementById("ellipseOutput");
+
+        function drawEllipse() {
+            // Validasi Input saat tombol ditekan
+            const cxInput = document.getElementById('ellipseCx');
+            const cyInput = document.getElementById('ellipseCy');
+            const rxInput = document.getElementById('ellipseRx');
+            const ryInput = document.getElementById('ellipseRy');
+
+            if (!validateInput(cxInput)) { cxInput.reportValidity(); return; }
+            if (!validateInput(cyInput)) { cyInput.reportValidity(); return; }
+            if (!validateInput(rxInput)) { rxInput.reportValidity(); return; }
+            if (!validateInput(ryInput)) { ryInput.reportValidity(); return; }
+            
+            // Jika valid, ambil nilainya
+            const cx = parseInt(cxInput.value);
+            const cy = parseInt(cyInput.value);
+            const rx = parseInt(rxInput.value);
+            const ry = parseInt(ryInput.value);
+
+            clearCanvas('ellipseCanvas');
+
+            drawCenterPoint(ellipseCtx, cx, cy, `Pusat (${cx},${cy})`);
+            let pixelsDrawn = [];
+            drawEllipseMidpoint(cx, cy, rx, ry, pixelsDrawn);
+            
+            ellipseOutput.textContent = `Piksel yang digambar (${pixelsDrawn.length}):\n` + 
+                                        pixelsDrawn.map(p => `(${p.x},${p.y})`).join(', ');
+        }
+
+        function plotEllipsePoints(ctx, cx, cy, x, y, pixelsDrawn) {
+            drawPixel(ctx, cx + x, cy + y, 'green'); pixelsDrawn.push({x:cx+x, y:cy+y});
+            drawPixel(ctx, cx - x, cy + y, 'green'); pixelsDrawn.push({x:cx-x, y:cy+y});
+            drawPixel(ctx, cx + x, cy - y, 'green'); pixelsDrawn.push({x:cx+x, y:cy-y});
+            drawPixel(ctx, cx - x, cy - y, 'green'); pixelsDrawn.push({x:cx-x, y:cy-y});
+        }
+
+        function drawEllipseMidpoint(cx, cy, rx, ry, pixelsDrawn) {
+            let rxSq = rx * rx;
+            let rySq = ry * ry;
+            let x = 0;
+            let y = ry;
+            let p;
+
+            // Region 1
+            p = rySq - rxSq * ry + 0.25 * rxSq;
+            
+            while ((2 * rySq * x) < (2 * rxSq * y)) {
+                plotEllipsePoints(ellipseCtx, cx, cy, x, y, pixelsDrawn);
+                x++;
+                if (p < 0) {
+                    p += 2 * rySq * x + rySq;
+                } else {
+                    y--;
+                    p += 2 * rySq * x - 2 * rxSq * y + rySq;
+                }
+            }
+
+            // Region 2
+            p = rySq * (x + 0.5) * (x + 0.5) + rxSq * (y - 1) * (y - 1) - rxSq * rySq;
+
+            while (y >= 0) {
+                plotEllipsePoints(ellipseCtx, cx, cy, x, y, pixelsDrawn);
+                y--;
+                if (p > 0) {
+                    p += rxSq - 2 * rxSq * y;
+                } else {
+                    x++;
+                    p += 2 * rySq * x - 2 * rxSq * y + rxSq;
+                }
+            }
+            
+            ellipseCtx.beginPath();
+            ellipseCtx.ellipse(cx, ellipseCtx.canvas.height - cy, rx, ry, 0, 0, 2 * Math.PI);
+            ellipseCtx.strokeStyle = "rgba(0, 128, 0, 0.8)";
+            ellipseCtx.lineWidth = 1;
+            ellipseCtx.stroke();
+        }
+
+        // Panggil saat pertama kali dimuat
+        document.addEventListener("DOMContentLoaded", function() {
+            drawEllipse();
+            drawCircle();
+            if (typeof MathJax !== 'undefined') {
+                MathJax.typeset();
+            }
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html>

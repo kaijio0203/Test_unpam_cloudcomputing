@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Grafika Komputer: API Grafis dan Pengolahan Citra Digital</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f7f9fc; color: #333; line-height: 1.6; }
+        .container { max-width: 950px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 5px 25px rgba(0,0,0,0.15); }
+        h2, h3 { color: #004085; text-align: center; margin-bottom: 25px; border-bottom: 2px solid #a8cde0; padding-bottom: 10px; }
+        .section { background: #fdfefe; padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #d0e6f8; }
+        .section h3 { color: #0056b3; text-align: left; border-bottom: 1px solid #e0f0ff; padding-bottom: 8px; margin-bottom: 20px; }
+        .input-group { display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.9em; }
+        .input-group span { font-weight: bold; min-width: 20px; }
+        .input-group label { display:flex; align-items:center; gap: 5px; }
+        input[type="number"] { width: 60px; padding: 8px; border: 1px solid #cce0f0; border-radius: 5px; text-align: center; }
+        select { padding: 8px; border: 1px solid #cce0f0; border-radius: 5px; width: 100%; }
+        input[type="range"]{ width: 100%; }
+        button { padding: 10px 18px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; }
+        button.secondary { background-color: #6c757d; }
+        button.tertiary { background-color: #dc3545; }
+        canvas { border: 2px solid #aaa; background-color: #f0f2f5; display: block; margin: 10px auto; border-radius: 8px; max-width: 100%; }
+        .main-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .control-box { border: 1px dashed #e0f0ff; padding: 15px; border-radius: 8px; }
+        h4 { margin-top: 0; color: #004085; }
+        pre { background-color: #f0f4f7; padding: 15px; border-radius: 8px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 0.85em; color: #555; border: 1px solid #dee9f2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Grafika Komputer: API Grafis dan Pengolahan Citra Digital</h2>
+
+        <div class="section">
+            <h3>1. API Grafis dan Primitif Geometris</h3>
+            <p><strong>OpenGL (Open Graphics Library)</strong> adalah sebuah Antarmuka Pemrograman Aplikasi (API) untuk grafika 2D dan 3D. API ini menjadi standar industri yang digunakan dalam berbagai aplikasi. Sebaliknya, pengguna harus membangun model yang diinginkan dari sekumpulan kecil <strong>primitif geometris</strong>, yaitu titik, garis, dan poligon.</p>
+            <div class="main-grid">
+                <div class="control-box">
+                    <h4>Kontrol Titik Sudut (Vertices)</h4>
+                    <div class="input-group"><span>A:</span><label>X:<input type="number" id="num_pAx"></label><input type="range" id="slider_pAx"></div>
+                    <div class="input-group"><span></span><label>Y:<input type="number" id="num_pAy"></label><input type="range" id="slider_pAy"></div>
+                    <div class="input-group"><span>B:</span><label>X:<input type="number" id="num_pBx"></label><input type="range" id="slider_pBx"></div>
+                    <div class="input-group"><span></span><label>Y:<input type="number" id="num_pBy"></label><input type="range" id="slider_pBy"></div>
+                    <div class="input-group"><span>C:</span><label>X:<input type="number" id="num_pCx"></label><input type="range" id="slider_pCx"></div>
+                    <div class="input-group"><span></span><label>Y:<input type="number" id="num_pCy"></label><input type="range" id="slider_pCy"></div>
+                </div>
+                <div class="control-box">
+                    <h4>Pilih Primitif untuk Digambar</h4>
+                    <select id="primitiveType" style="width:100%; padding: 8px;">
+                        <option value="points">Titik (Points)</option>
+                        <option value="lines">Garis (Lines)</option>
+                        <option value="polygon_stroke">Poligon (Outline)</option>
+                        <option value="polygon_fill">Poligon (Filled)</option>
+                    </select>
+                </div>
+            </div>
+            <canvas id="apiCanvas" width="500" height="300"></canvas>
+        </div>
+
+        <div class="section">
+            <h3>2. Pengolahan Citra Digital</h3>
+            <p><strong>Citra digital</strong> adalah representasi gambar yang dapat diolah oleh komputer. Citra ini dibentuk melalui dua proses utama: <strong>sampling</strong> (menentukan resolusi spasial) dan <strong>kuantisasi</strong> (menentukan jumlah warna).</p>
+            <div class="main-grid">
+                <div class="control-box">
+                    <h4>Kontrol Filter Citra</h4>
+                    <div style="display:flex; gap: 10px; margin-bottom: 15px;">
+                        <label for="imageUpload" style="cursor:pointer; background: #007bff; color:white; padding:10px; border-radius:5px; text-align:center; flex:1;">Unggah Gambar</label>
+                        <input type="file" id="imageUpload" accept="image/*" style="display:none;">
+                        <button id="removeImageButton" class="tertiary" style="flex:1;">Hapus Gambar</button>
+                    </div>
+                    <button id="resetButton" class="secondary" style="width:100%; margin-bottom: 15px;">Reset Semua Filter</button>
+                    <hr>
+                    <div class="input-group" style="grid-template-columns: 80px 1fr auto;"><span>Sampling:</span><input type="range" id="sampling" min="1" max="20" value="1"><span id="sampling_val">1</span></div>
+                    <div class="input-group" style="grid-template-columns: 80px 1fr auto;"><span>Kuantisasi:</span><input type="range" id="quantization" min="2" max="256" value="256"><span id="quantization_val">256</span></div>
+                    <div class="input-group" style="grid-template-columns: 80px 1fr auto;"><span>Brightness:</span><input type="range" id="brightness" min="-100" max="100" value="0"><span id="brightness_val">0</span></div>
+                    <div class="input-group" style="grid-template-columns: 80px 1fr auto;"><span>Contrast:</span><input type="range" id="contrast" min="-100" max="100" value="0"><span id="contrast_val">0</span></div>
+                    <div class="input-group" style="grid-template-columns: 80px auto;"><span>Grayscale:</span><input type="checkbox" id="grayscale"></div>
+                    <div class="input-group" style="grid-template-columns: 80px auto;"><span>Invert:</span><input type="checkbox" id="invert"></div>
+                </div>
+                <div class="control-box">
+                     <h4>Hasil Pengolahan Citra</h4>
+                     <div style="text-align:center;">
+                         <h5>Asli</h5>
+                         <canvas id="originalImageCanvas" width="350" height="350"></canvas>
+                     </div>
+                     <div style="text-align:center; margin-top: 20px;">
+                         <h5>Hasil</h5>
+                         <canvas id="processedImageCanvas" width="350" height="350"></canvas>
+                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- SETUP UI ---
+        const ui = { inputs: {}, contexts: {}, outputs: {}, buttons: {} };
+        function setupUI(ids) { ids.forEach(id => { const el = document.getElementById(id); if (el) { if (el.nodeName === 'CANVAS') ui.contexts[id] = el.getContext('2d'); else if (el.nodeName === 'INPUT' || el.nodeName === 'SELECT') ui.inputs[id] = el; else if (el.nodeName === 'BUTTON') ui.buttons[id] = el; else ui.outputs[id] = el; } }); }
+        setupUI(['apiCanvas', 'primitiveType', 'num_pAx', 'slider_pAx', 'num_pAy', 'slider_pAy', 'num_pBx', 'slider_pBx', 'num_pBy', 'slider_pBy', 'num_pCx', 'slider_pCx', 'num_pCy', 'slider_pCy', 'originalImageCanvas', 'processedImageCanvas', 'imageUpload', 'resetButton', 'removeImageButton', 'sampling', 'quantization', 'brightness', 'contrast', 'grayscale', 'invert', 'sampling_val', 'quantization_val', 'brightness_val', 'contrast_val']);
+
+        // --- HELPER FUNCTIONS ---
+        function drawAxes(ctx) { const { width: w, height: h } = ctx.canvas; const hMid = w / 2, vMid = h / 2; ctx.strokeStyle = "#f0f0f0"; ctx.lineWidth = 1; for (let i = hMid % 20; i < w; i += 20) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke(); } for (let i = vMid % 20; i < h; i += 20) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(w, i); ctx.stroke(); } ctx.strokeStyle = "#ccc"; ctx.beginPath(); ctx.moveTo(0, vMid); ctx.lineTo(w, vMid); ctx.stroke(); ctx.beginPath(); ctx.moveTo(hMid, 0); ctx.lineTo(hMid, h); ctx.stroke(); }
+
+        // --- SIMULASI 1: API PRIMITIVES ---
+        function runApiSimulation() { /* ... (Logic is unchanged) ... */ }
+        
+        // --- SIMULASI 2: IMAGE PROCESSING ---
+        let originalImageData = null;
+        function runImageProcessing() {
+            const outCtx = ui.contexts.processedImageCanvas;
+            if (!originalImageData) {
+                outCtx.clearRect(0,0,outCtx.canvas.width, outCtx.canvas.height);
+                return;
+            };
+            
+            const { width: w, height: h } = outCtx.canvas;
+            const sampling = parseInt(ui.inputs.sampling.value);
+            const quantization = parseInt(ui.inputs.quantization.value);
+            const brightness = parseInt(ui.inputs.brightness.value);
+            const contrast = parseInt(ui.inputs.contrast.value);
+            const grayscale = ui.inputs.grayscale.checked;
+            const invert = ui.inputs.invert.checked;
+
+            ui.outputs.sampling_val.textContent = sampling;
+            ui.outputs.quantization_val.textContent = quantization;
+            ui.outputs.brightness_val.textContent = brightness;
+            ui.outputs.contrast_val.textContent = contrast;
+
+            const processedData = new Uint8ClampedArray(originalImageData.data);
+            const contrastFactor = (100 + contrast) / 100;
+
+            for (let y = 0; y < h; y += sampling) {
+                for (let x = 0; x < w; x += sampling) {
+                    const i = (y * w + x) * 4;
+                    let r = originalImageData.data[i];
+                    let g = originalImageData.data[i+1];
+                    let b = originalImageData.data[i+2];
+
+                    r += brightness; g += brightness; b += brightness;
+                    r = (r - 128) * contrastFactor + 128;
+                    g = (g - 128) * contrastFactor + 128;
+                    b = (b - 128) * contrastFactor + 128;
+                    if (grayscale) { const avg = (r + g + b) / 3; r = g = b = avg; }
+                    const q = 255 / (quantization - 1);
+                    r = Math.round(r / q) * q; g = Math.round(g / q) * q; b = Math.round(b / q) * q;
+                    if (invert) { r = 255 - r; g = 255 - g; b = 255 - b; }
+
+                    for (let blockY = 0; blockY < sampling && y + blockY < h; blockY++) {
+                        for (let blockX = 0; blockX < sampling && x + blockX < w; blockX++) {
+                            const pi = ((y + blockY) * w + (x + blockX)) * 4;
+                            processedData[pi] = r; processedData[pi+1] = g; processedData[pi+2] = b;
+                        }
+                    }
+                }
+            }
+            outCtx.putImageData(new ImageData(processedData, w, h), 0, 0);
+        }
+        
+        function removeImage() {
+            originalImageData = null;
+            const origCtx = ui.contexts.originalImageCanvas;
+            const procCtx = ui.contexts.processedImageCanvas;
+            origCtx.clearRect(0, 0, origCtx.canvas.width, origCtx.canvas.height);
+            procCtx.clearRect(0, 0, procCtx.canvas.width, procCtx.canvas.height);
+            ui.inputs.imageUpload.value = null; // Reset file input
+        }
+
+        // --- EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Setup dual inputs for API sim
+            const apiPoints = [['pA',-200,200,-150,150], ['pB',-200,200,-150,150], ['pC',-200,200,-150,150]];
+            apiPoints.forEach(([p,xMin,xMax,yMin,yMax]) => {
+                const numX = ui.inputs[`num_${p}x`], sliderX = ui.inputs[`slider_${p}x`], numY = ui.inputs[`num_${p}y`], sliderY = ui.inputs[`slider_${p}y`];
+                [sliderX.min, sliderX.max, numX.min, numX.max] = [xMin,xMax,xMin,xMax];
+                [sliderY.min, sliderY.max, numY.min, numY.max] = [yMin,yMax,yMin,yMax];
+                if (!numX.value) { numX.value = Math.floor(Math.random()*(xMax-xMin)+xMin); } sliderX.value = numX.value;
+                if (!numY.value) { numY.value = Math.floor(Math.random()*(yMax-yMin)+yMin); } sliderY.value = numY.value;
+                sliderX.addEventListener('input', () => { numX.value = sliderX.value; runApiSimulation(); });
+                numX.addEventListener('input', () => { sliderX.value = numX.value; runApiSimulation(); });
+                sliderY.addEventListener('input', () => { numY.value = sliderY.value; runApiSimulation(); });
+                numY.addEventListener('input', () => { numY.value = numY.value; runApiSimulation(); });
+            });
+            ui.inputs.primitiveType.addEventListener('input', runApiSimulation);
+            
+            // Listeners for Image Processing
+            ui.inputs.imageUpload.addEventListener('change', (e) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const ctx = ui.contexts.originalImageCanvas;
+                        ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);
+                        ctx.drawImage(img, 0, 0, ctx.canvas.width, ctx.canvas.height);
+                        originalImageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+                        runImageProcessing();
+                    };
+                    img.src = event.target.result;
+                };
+                if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
+            });
+            ['sampling','quantization','brightness','contrast','grayscale','invert'].forEach(id => ui.inputs[id].addEventListener('input', runImageProcessing));
+            ui.buttons.resetButton.addEventListener('click', ()=>{
+                ['sampling'].forEach(id => ui.inputs[id].value = 1);
+                ['quantization'].forEach(id => ui.inputs[id].value = 256);
+                ['brightness','contrast'].forEach(id => ui.inputs[id].value = 0);
+                ['grayscale','invert'].forEach(id => ui.inputs[id].checked = false);
+                runImageProcessing();
+            });
+            ui.buttons.removeImageButton.addEventListener('click', removeImage);
+
+            runApiSimulation();
+        });
+        
+        // Implementasi ringkas dari fungsi yang tidak berubah
+        function runApiSimulation(){const ctx=ui.contexts.apiCanvas;const{width:w,height:h}=ctx.canvas;const hMid=w/2,vMid=h/2;ctx.clearRect(0,0,w,h);drawAxes(ctx);const points=[{x:parseFloat(ui.inputs.num_pAx.value),y:parseFloat(ui.inputs.num_pAy.value)},{x:parseFloat(ui.inputs.num_pBx.value),y:parseFloat(ui.inputs.num_pBy.value)},{x:parseFloat(ui.inputs.num_pCx.value),y:parseFloat(ui.inputs.num_pCy.value)}];const screenPoints=points.map(p=>({x:p.x+hMid,y:-p.y+vMid}));const type=ui.inputs.primitiveType.value;if(type==='points'){screenPoints.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,5,0,2*Math.PI);ctx.fillStyle='red';ctx.fill()})}else if(type==='lines'||type==='polygon_stroke'||type==='polygon_fill'){ctx.beginPath();ctx.moveTo(screenPoints[0].x,screenPoints[0].y);screenPoints.forEach(p=>ctx.lineTo(p.x,p.y));ctx.closePath();if(type==='polygon_fill'){ctx.fillStyle='rgba(0, 128, 0, 0.5)';ctx.fill()}ctx.strokeStyle='green';ctx.lineWidth=2;ctx.stroke()}}
+    </script>
+</body>
+</html>

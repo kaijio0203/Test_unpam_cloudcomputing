@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Grafika Komputer: Proyeksi Geometri Bidang</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f0f4f7; color: #333; line-height: 1.6; }
+        .container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 5px 25px rgba(0,0,0,0.15); }
+        h2, h3 { color: #004085; text-align: center; margin-bottom: 25px; border-bottom: 2px solid #a8cde0; padding-bottom: 10px; }
+        .section { background: #fdfefe; padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #d0e6f8; }
+        .section h3 { color: #0056b3; text-align: left; border-bottom: 1px solid #e0f0ff; padding-bottom: 8px; margin-bottom: 20px; }
+        .input-group label { display: flex; align-items: center; gap: 5px; margin-bottom: 8px; }
+        input[type="number"] { width: 60px; padding: 8px; border: 1px solid #cce0f0; border-radius: 5px; text-align: center; margin-right: 5px; }
+        button { padding: 10px 18px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; }
+        .canvas-container { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px; margin-top: 20px; }
+        .canvas-box { text-align: center; background-color: #fdfdfd; border: 1px solid #ddd; border-radius: 8px; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        canvas { border: 2px solid #aaa; background-color: #fdfdfd; display: block; margin: 10px auto; border-radius: 8px; }
+        .output-box { background: #e9f0f7; border: 1px solid #cce0f0; padding: 15px; border-radius: 8px; margin-top: 15px; font-family: monospace; white-space: pre-wrap; word-wrap: break-word; font-size: 0.9em; }
+        .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .controls-grid > div { border: 1px dashed #e0f0ff; padding: 15px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Grafika Komputer: Proyeksi Geometri Bidang</h2>
+        <div class="section">
+            <h3>2. Demonstrasi Proyeksi</h3>
+            <div class="controls-grid">
+                <div>
+                    <h4>Kontrol Kubus 3D</h4>
+                    <label>Pusat X: <input type="number" id="cubeX" value="0" min="-100" max="100"></label>
+                    <label>Pusat Y: <input type="number" id="cubeY" value="0" min="-100" max="100"></label>
+                    <label>Pusat Z: <input type="number" id="cubeZ" value="0" min="-100" max="100"></label>
+                    <label>Ukuran Sisi: <input type="number" id="cubeSize" value="80" min="10" max="150"></label>
+                </div>
+                <div>
+                    <h4>Kontrol Proyeksi Perspektif</h4>
+                    <p>Geser slider untuk mengubah jarak pandang (focal length).</p>
+                    <label>Jarak Pandang (d): <input type="range" id="perspectiveDistance" min="50" max="500" step="5" value="150"></label>
+                    <span id="distanceValue">150</span>
+                </div>
+            </div>
+             <div style="text-align:center; margin-top:15px;">
+                 <button onclick="validateAndDraw()">Terapkan & Gambar Ulang</button>
+             </div>
+            <div class="canvas-container">
+                <div class="canvas-box"><h4>Orthographic (Depan)</h4><canvas id="canvasFront" width="250" height="250"></canvas></div>
+                <div class="canvas-box"><h4>Orthographic (Atas)</h4><canvas id="canvasTop" width="250" height="250"></canvas></div>
+                <div class="canvas-box"><h4>Orthographic (Samping)</h4><canvas id="canvasSide" width="250" height="250"></canvas></div>
+                <div class="canvas-box"><h4>Perspektif</h4><canvas id="canvasPerspective" width="250" height="250"></canvas></div>
+            </div>
+            <div class="output-box" id="outputInfo"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. SETUP DAN INISIALISASI ---
+        const ui = {
+            inputs: {
+                cx: document.getElementById('cubeX'),
+                cy: document.getElementById('cubeY'),
+                cz: document.getElementById('cubeZ'),
+                size: document.getElementById('cubeSize'),
+                distance: document.getElementById('perspectiveDistance')
+            },
+            contexts: {
+                front: document.getElementById('canvasFront').getContext('2d'),
+                top: document.getElementById('canvasTop').getContext('2d'),
+                side: document.getElementById('canvasSide').getContext('2d'),
+                perspective: document.getElementById('canvasPerspective').getContext('2d')
+            },
+            outputs: {
+                distance: document.getElementById('distanceValue'),
+                info: document.getElementById('outputInfo')
+            }
+        };
+
+        const cubeVerticesUnit = [
+            [-0.5, -0.5, -0.5], [0.5, -0.5, -0.5], [0.5, 0.5, -0.5], [-0.5, 0.5, -0.5],
+            [-0.5, -0.5, 0.5], [0.5, -0.5, 0.5], [0.5, 0.5, 0.5], [-0.5, 0.5, 0.5]
+        ];
+        const cubeEdges = [
+            [0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4],
+            [0, 4], [1, 5], [2, 6], [3, 7]
+        ];
+
+        // --- 2. FUNGSI-FUNGSI LOGIKA INTI ---
+        function transformCube(cx, cy, cz, size) {
+            return cubeVerticesUnit.map(v => ({
+                x: v[0] * size + cx, y: v[1] * size + cy, z: v[2] * size + cz
+            }));
+        }
+
+        // --- 3. FUNGSI MENGGAMBAR YANG SPESIFIK DAN JELAS ---
+
+        function drawScene() {
+            // Ambil semua nilai dari UI, berikan nilai default jika kosong/tidak valid
+            const cx = parseFloat(ui.inputs.cx.value) || 0;
+            const cy = parseFloat(ui.inputs.cy.value) || 0;
+            const cz = parseFloat(ui.inputs.cz.value) || 0;
+            const size = parseFloat(ui.inputs.size.value) || 80;
+            const distance = parseFloat(ui.inputs.distance.value);
+            
+            // Update tampilan teks
+            ui.outputs.distance.textContent = distance;
+            ui.outputs.info.textContent = `Pusat 3D: (${cx}, ${cy}, ${cz}) | Ukuran: ${size} | Jarak Pandang: ${distance}`;
+
+            // Buat titik-titik 3D kubus
+            const vertices3D = transformCube(cx, cy, cz, size);
+            
+            // Panggil setiap fungsi gambar spesifik
+            drawOrthoView(ui.contexts.front, vertices3D, 'front');
+            drawOrthoView(ui.contexts.top, vertices3D, 'top');
+            drawOrthoView(ui.contexts.side, vertices3D, 'side');
+            drawPerspectiveView(ui.contexts.perspective, vertices3D, distance);
+        }
+        
+        function drawOrthoView(ctx, vertices, view) {
+            const canvas = ctx.canvas;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            ctx.beginPath();
+            ctx.strokeStyle = 'blue';
+            ctx.lineWidth = 2;
+
+            cubeEdges.forEach(edge => {
+                const v1 = vertices[edge[0]];
+                const v2 = vertices[edge[1]];
+                let p1, p2;
+                
+                if (view === 'front') { p1 = {x: v1.x, y: v1.y}; p2 = {x: v2.x, y: v2.y}; }
+                else if (view === 'top') { p1 = {x: v1.x, y: v1.z}; p2 = {x: v2.x, y: v2.z}; }
+                else { p1 = {x: v1.z, y: v1.y}; p2 = {x: v2.z, y: v2.y}; }
+
+                ctx.moveTo(p1.x + centerX, -p1.y + centerY);
+                ctx.lineTo(p2.x + centerX, -p2.y + centerY);
+            });
+            ctx.stroke();
+        }
+        
+        function drawPerspectiveView(ctx, vertices, distance) {
+            const canvas = ctx.canvas;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            ctx.beginPath();
+            ctx.strokeStyle = 'green';
+            ctx.lineWidth = 2;
+            
+            cubeEdges.forEach(edge => {
+                const v1 = vertices[edge[0]];
+                const v2 = vertices[edge[1]];
+                
+                // Rumus proyeksi perspektif
+                const scale1 = distance / (distance + v1.z);
+                const p1 = { x: v1.x * scale1, y: v1.y * scale1 };
+                
+                const scale2 = distance / (distance + v2.z);
+                const p2 = { x: v2.x * scale2, y: v2.y * scale2 };
+                
+                if (distance + v1.z > 0 && distance + v2.z > 0) { // Hanya gambar jika di depan kamera
+                    ctx.moveTo(p1.x + centerX, -p1.y + centerY);
+                    ctx.lineTo(p2.x + centerX, -p2.y + centerY);
+                }
+            });
+            ctx.stroke();
+        }
+
+        // --- 4. FUNGSI VALIDASI DAN EVENT LISTENERS ---
+        function validateAndDraw() {
+            let allValid = true;
+            const inputsToValidate = [ui.inputs.cx, ui.inputs.cy, ui.inputs.cz, ui.inputs.size];
+            inputsToValidate.forEach(input => {
+                if (!validateInput(input)) {
+                    input.reportValidity();
+                    allValid = false;
+                }
+            });
+
+            if (allValid) {
+                drawScene();
+            }
+        }
+        
+        function validateInput(inputElement) {
+            const value = parseFloat(inputElement.value);
+            const min = parseFloat(inputElement.min);
+            const max = parseFloat(inputElement.max);
+            if (isNaN(value)) {
+                inputElement.setCustomValidity('Wajib diisi angka.'); return false;
+            } else if (value < min || value > max) {
+                inputElement.setCustomValidity(`Nilai harus antara ${min} dan ${max}.`); return false;
+            } else {
+                inputElement.setCustomValidity(''); return true;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Listener untuk slider. Langsung panggil fungsi gambar.
+            ui.inputs.distance.addEventListener('input', drawScene);
+
+            // Listener untuk input teks. Hanya memvalidasi.
+            [ui.inputs.cx, ui.inputs.cy, ui.inputs.cz, ui.inputs.size].forEach(input => {
+                input.addEventListener('input', () => validateInput(input));
+            });
+            
+            // Gambar awal saat halaman dimuat.
+            drawScene();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Penjualan</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #6b7280;
+            --danger-color: #ef4444;
+            --success-color: #22c55e;
+            --background-color: #f3f4f6;
+            --surface-color: #ffffff;
+            --text-color: #1f2937;
+            --border-color: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            gap: 2rem;
+        }
+
+        .card {
+            background-color: var(--surface-color);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        h1, h2 {
+            color: var(--text-color);
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary { background-color: var(--primary-color); }
+        .btn-primary:hover { background-color: #4338ca; }
+        .btn-danger { background-color: var(--danger-color); }
+        .btn-danger:hover { background-color: #dc2626; }
+        .btn-secondary { background-color: var(--secondary-color); }
+        .btn-secondary:hover { background-color: #4b5563; }
+        .btn-small { padding: 0.25rem 0.75rem; font-size: 0.875rem; width: auto; display: inline-block; margin-right: 0.5rem;}
+
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        thead {
+            background-color: #f9fafb;
+        }
+        
+        .summary-box {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .summary-box h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.25rem;
+        }
+        .summary-box p {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        /* Modal Styles */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background-color: var(--surface-color); padding: 2rem; border-radius: 0.75rem; width: 90%; max-width: 500px; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .close-button { background: none; border: none; font-size: 1.5rem; font-weight: bold; cursor: pointer; color: var(--secondary-color); }
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Dashboard Penjualan</h1>
+        </header>
+
+        <main>
+            <div class="card">
+                <h2>Tambah Data Penjualan</h2>
+                <form id="addSaleForm">
+                    <div class="form-group">
+                        <label for="productName">Nama Produk</label>
+                        <input type="text" id="productName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantity">Jumlah Terjual</label>
+                        <input type="number" id="quantity" required min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="price">Harga per Pcs (Rp)</label>
+                        <input type="number" id="price" required min="0">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Tambah Penjualan</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Daftar Penjualan</h2>
+                 <div id="summary" class="summary-box">
+                    <h3>Total Pendapatan</h3>
+                    <p id="totalRevenue">Rp 0</p>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>Nama Produk</th>
+                                <th>Jumlah</th>
+                                <th>Harga Satuan</th>
+                                <th>Total Harga</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesTableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Grafik Penjualan (berdasarkan Unit)</h2>
+                <div class="charts-grid">
+                    <div>
+                        <canvas id="lineChart"></canvas>
+                    </div>
+                    <div>
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Data Penjualan</h2>
+                <button class="close-button">&times;</button>
+            </div>
+            <form id="editSaleForm">
+                <input type="hidden" id="editIndex">
+                <div class="form-group">
+                    <label for="editProductName">Nama Produk</label>
+                    <input type="text" id="editProductName" required>
+                </div>
+                <div class="form-group">
+                    <label for="editQuantity">Jumlah Terjual</label>
+                    <input type="number" id="editQuantity" required min="1">
+                </div>
+                 <div class="form-group">
+                    <label for="editPrice">Harga per Pcs (Rp)</label>
+                    <input type="number" id="editPrice" required min="0">
+                </div>
+                <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let salesData = [
+                { name: 'Sambal Matah', quantity: 15, price: 5000 },
+                { name: 'Sambal Ijo', quantity: 28, price: 4500 },
+                { name: 'Sambal Nusantara', quantity: 55, price: 7000 }
+            ];
+            let lineChartInstance;
+            let pieChartInstance;
+            const editModal = document.getElementById('editModal');
+            
+            const formatCurrency = (amount) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+
+            const renderTable = () => {
+                const tableBody = document.getElementById('salesTableBody');
+                tableBody.innerHTML = '';
+                let totalRevenue = 0;
+                salesData.forEach((item, index) => {
+                    const itemTotal = item.quantity * item.price;
+                    totalRevenue += itemTotal;
+                    tableBody.innerHTML += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${item.name}</td>
+                            <td>${item.quantity}</td>
+                            <td>${formatCurrency(item.price)}</td>
+                            <td>${formatCurrency(itemTotal)}</td>
+                            <td>
+                                <button class="btn-secondary btn-small" data-action="edit" data-index="${index}">Edit</button>
+                                <button class="btn-danger btn-small" data-action="delete" data-index="${index}">Hapus</button>
+                            </td>
+                        </tr>`;
+                });
+                document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
+            };
+
+            const renderCharts = () => {
+                const labels = salesData.map(item => item.name);
+                const data = salesData.map(item => item.quantity);
+                const totalSales = data.reduce((sum, value) => sum + value, 0);
+
+                // Line Chart (Perubahan dari Bar ke Line)
+                const lineCtx = document.getElementById('lineChart').getContext('2d');
+                if (lineChartInstance) lineChartInstance.destroy();
+                lineChartInstance = new Chart(lineCtx, {
+                    type: 'line', // <<< INI BAGIAN YANG DIUBAH
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Jumlah Unit Terjual',
+                            data: data,
+                            backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                            borderColor: 'rgba(79, 70, 229, 1)',
+                            borderWidth: 2,
+                            tension: 0.1,
+                            fill: true,
+                            pointBackgroundColor: 'rgba(79, 70, 229, 1)',
+                            pointRadius: 5
+                        }]
+                    },
+                    options: { scales: { y: { beginAtZero: true } } }
+                });
+
+                // Pie Chart
+                const pieCtx = document.getElementById('pieChart').getContext('2d');
+                if (pieChartInstance) pieChartInstance.destroy();
+                pieChartInstance = new Chart(pieCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{ data: data, backgroundColor: ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#6b7280', '#3b82f6'] }]
+                    },
+                    options: { plugins: { tooltip: { callbacks: { label: (c) => `${c.label}: ${c.raw} (${(c.parsed / totalSales * 100).toFixed(1)}%)` }}, datalabels: { formatter: (v, c) => `${(v / totalSales * 100).toFixed(1)}%`, color: '#fff', font: { weight: 'bold' }}} },
+                    plugins: [ChartDataLabels]
+                });
+            };
+
+            const fullRender = () => { renderTable(); renderCharts(); };
+
+            const addSale = (e) => {
+                e.preventDefault();
+                const name = document.getElementById('productName').value.trim();
+                const quantity = parseInt(document.getElementById('quantity').value, 10);
+                const price = parseInt(document.getElementById('price').value, 10);
+
+                if (!name || isNaN(quantity) || quantity <= 0 || isNaN(price) || price < 0) { alert('Mohon masukkan semua data dengan valid.'); return; }
+
+                const existingIndex = salesData.findIndex(item => item.name.toLowerCase() === name.toLowerCase());
+                if (existingIndex > -1) {
+                    salesData[existingIndex].quantity += quantity;
+                    salesData[existingIndex].price = price;
+                } else {
+                    salesData.push({ name, quantity, price });
+                }
+                document.getElementById('addSaleForm').reset();
+                fullRender();
+            };
+            
+            const handleTableClick = (e) => {
+                const { action, index } = e.target.dataset;
+                if (!action) return;
+                
+                const item = salesData[index];
+                if (action === 'delete') {
+                    if (confirm(`Yakin ingin menghapus "${item.name}"?`)) {
+                        salesData.splice(index, 1);
+                        fullRender();
+                    }
+                } else if (action === 'edit') {
+                    document.getElementById('editIndex').value = index;
+                    document.getElementById('editProductName').value = item.name;
+                    document.getElementById('editQuantity').value = item.quantity;
+                    document.getElementById('editPrice').value = item.price;
+                    editModal.style.display = 'flex';
+                }
+            };
+            
+            const saveEdit = (e) => {
+                e.preventDefault();
+                const index = parseInt(document.getElementById('editIndex').value, 10);
+                const name = document.getElementById('editProductName').value.trim();
+                const quantity = parseInt(document.getElementById('editQuantity').value, 10);
+                const price = parseInt(document.getElementById('editPrice').value, 10);
+
+                if (!name || isNaN(quantity) || quantity <= 0 || isNaN(price) || price < 0) { alert('Mohon masukkan semua data dengan valid.'); return; }
+                
+                salesData[index] = { name, quantity, price };
+                closeModal();
+                fullRender();
+            };
+            
+            const closeModal = () => { editModal.style.display = 'none'; };
+
+            // --- EVENT LISTENERS ---
+            document.getElementById('addSaleForm').addEventListener('submit', addSale);
+            document.getElementById('salesTableBody').addEventListener('click', handleTableClick);
+            document.getElementById('editSaleForm').addEventListener('submit', saveEdit);
+            editModal.querySelector('.close-button').addEventListener('click', closeModal);
+            window.addEventListener('click', (e) => { if (e.target === editModal) closeModal(); });
+
+            // --- INITIAL RENDER ---
+            fullRender();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Grafika Komputer: Algoritma Garis dan Poligon</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #e8f0f7;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+        }
+        h2, h3 {
+            color: #004085;
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #a8cde0;
+            padding-bottom: 10px;
+        }
+        .section {
+            background: #f8fcff;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid #d0e6f8;
+        }
+        .section h3 {
+            color: #0056b3;
+            text-align: left;
+            border-bottom: 1px solid #e0f0ff;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        input[type="number"] {
+            width: 70px;
+            padding: 8px;
+            border: 1px solid #cce0f0;
+            border-radius: 5px;
+            text-align: center;
+            margin-right: 5px;
+        }
+        button {
+            padding: 10px 18px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-1px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        canvas {
+            border: 2px solid #aaa;
+            background-color: #fdfdfd;
+            display: block;
+            margin: 20px auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        .output-box {
+            background: #e9f0f7;
+            border: 1px solid #cce0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 0.9em;
+        }
+        .algorithm-select {
+            margin-bottom: 15px;
+            display: flex; /* Untuk menengahkan elemen di dalamnya */
+            align-items: center;
+            gap: 10px;
+        }
+        .algorithm-select label, .algorithm-select select {
+            margin-right: 5px; /* Kurangi margin untuk label dan select */
+        }
+        .algorithm-select button {
+            margin-top: 0; /* Sesuaikan margin untuk tombol di baris ini */
+        }
+        .point-list {
+            margin-top: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px dashed #e0f0ff;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .point-item {
+            padding: 3px 0;
+            font-size: 0.9em;
+        }
+        pre {
+            background-color: #f0f4f7;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: #555;
+            border: 1px solid #dee9f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Grafika Komputer: Algoritma Garis dan Poligon</h2>
+
+        <div class="section">
+            <h3>1. Visualisasi Titik dan Koordinat Kartesius</h3>
+            <p>
+                Sebuah titik didefinisikan sebagai letak/posisi objek dalam sistem koordinat. Dalam grafika komputer, umumnya digunakan koordinat Kartesius (X, Y) di mana sumbu Y positif mengarah ke atas (berbeda dengan koordinat layar di mana Y positif ke bawah). 
+            </p>
+            <div class="input-group">
+                <label>X: <input type="number" id="pointX" value="50" min="0" max="400"></label>
+                <label>Y: <input type="number" id="pointY" value="50" min="0" max="300"></label>
+                <button onclick="drawPoint()">Gambar Titik</button>
+                <button onclick="clearCanvas('pointCanvas')">Bersihkan</button>
+            </div>
+            <canvas id="pointCanvas" width="500" height="350"></canvas>
+            <div class="output-box" id="pointInfo">
+                Titik saat ini: (50, 50).
+            </div>
+            <p>
+                Pada monitor, posisi sumbu Y mengarah ke bawah, sedangkan pada koordinat Kartesius posisi sumbu Y mengarah ke atas. 
+            </p>
+        </div>
+
+        <div class="section">
+            <h3>2. Algoritma Pembentukan Garis</h3>
+            <p>
+                Garis adalah kumpulan titik.  Algoritma pembentukan garis menentukan piksel-piksel mana yang harus diaktifkan untuk merepresentasikan garis lurus di layar raster. Persamaan garis lurus umum adalah y = mx + c, di mana m adalah gradien dan c adalah konstanta.  Algoritma yang umum digunakan termasuk Brute Force, DDA (Digital Differential Analyzer), dan Bresenham. 
+            </p>
+
+            <div class="input-group">
+                <label>Titik A (x1, y1): <input type="number" id="x1" value="50" min="0" max="400"> <input type="number" id="y1" value="50" min="0" max="300"></label>
+                <label>Titik B (x2, y2): <input type="number" id="x2" value="400" min="0" max="400"> <input type="number" id="y2" value="300" min="0" max="300"></label>
+            </div>
+            <div class="algorithm-select">
+                <label for="lineAlgorithm">Pilih Algoritma Garis:</label>
+                <select id="lineAlgorithm">
+                    <option value="bruteForce">Brute Force</option>
+                    <option value="dda">DDA (Digital Differential Analyzer)</option>
+                    <option value="bresenham">Bresenham (0 &lt; m &lt; 1)</option>
+                </select>
+                <button onclick="drawLine()">Gambar Garis</button>
+                <button onclick="clearCanvas('lineCanvas')">Bersihkan</button>
+            </div>
+            <canvas id="lineCanvas" width="500" height="350"></canvas>
+            <div class="output-box" id="lineOutput">
+                Piksel yang digambar akan muncul di sini.
+                <div class="point-list" id="linePointsList"></div>
+            </div>
+
+            <h4>Prinsip Algoritma Garis:</h4>
+            <h5>Brute Force Algorithm:</h5>
+            <p>
+                Algoritma ini menggunakan persamaan garis y = mx + c secara langsung. Untuk setiap nilai x dari x_1 ke x_2, nilai y dihitung dan dibulatkan ke bilangan bulat terdekat untuk menentukan piksel. Kelemahan utamanya adalah penggunaan operasi floating-point dan pembulatan yang berulang, serta inefisiensi untuk garis vertikal/horizontal dan kemiringan tinggi. 
+            </p>
+            <pre>
+function drawLineBruteForce(x1, y1, x2, y2):
+  dx = x2 - x1
+  dy = y2 - y1
+
+  if dx == 0: // Garis Vertikal
+    for y from min(y1, y2) to max(y1, y2):
+      drawPixel(x1, y)
+    return
+
+  m = dy / dx
+  c = y1 - m * x1
+
+  for x from min(x1, x2) to max(x1, x2):
+    y = m * x + c
+    drawPixel(x, round(y))
+
+  // Tangani kasus m > 1 dengan menukar x dan y
+  if abs(m) > 1:
+
+            </pre>
+
+            <h5>DDA (Digital Differential Analyzer) Algorithm:</h5>
+            <p>
+                Algoritma DDA memiliki kelebihan kecepatan dibanding Brute Force, terutama untuk gradien m > 1. Namun, DDA masih memerlukan pembulatan dan variabelnya tetap menggunakan angka real/floating point. 
+            </p>
+            <pre>
+function drawLineDDA(x1, y1, x2, y2):
+  dx = x2 - x1
+  dy = y2 - y1
+
+  steps = max(abs(dx), abs(dy)) // Langkah total
+
+  x_inc = dx / steps // Inkrementasi x per langkah
+  y_inc = dy / steps // Inkrementasi y per langkah
+
+  x = x1
+  y = y1
+
+  for i from 0 to steps:
+    drawPixel(round(x), round(y))
+    x = x + x_inc
+    y = y + y_inc
+            </pre>
+
+            <h5>Bresenham's Line Algorithm (0 < m < 1):</h5>
+            <p>
+                Dicetuskan oleh J.E. Bresenham pada tahun 1965, algoritma ini mengoptimalkan kualitas gambar garis di grafika raster karena tidak lagi memakai aritmetika floating-point, sehingga tidak diperlukan pembulatan.  Iterasi dilakukan secara incremental. Kelemahannya, algoritma dasar ini hanya untuk kemiringan 0 < m < 1. 
+            </p>
+            <pre>
+function drawLineBresenham(x1, y1, x2, y2):
+  dx = abs(x2 - x1)
+  dy = abs(y2 - y1)
+  p = 2 * dy - dx // Parameter keputusan awal
+
+  x = x1
+  y = y1
+
+  for k from 0 to dx:
+    drawPixel(x, y)
+    if p < 0:
+      p = p + 2 * dy
+    else:
+      p = p + 2 * dy - 2 * dx
+      y = y + 1 // Untuk m>0
+    x = x + 1
+            </pre>
+
+        </div>
+
+        <div class="section">
+            <h3>3. Poligon dan Filling</h3>
+            <p>
+                Poligon adalah gabungan dari beberapa garis lurus yang saling terhubung membentuk suatu luasan. Garis-garis ini disebut edge, dan titik pertemuan antar edge disebut vertex (verteks).  Poligon dapat dibagi menjadi poligon sederhana (sisi tidak berpotongan, tidak ada lubang) dan tidak sederhana, serta poligon cembung (convex) dan non-cembung (non-convex). 
+            </p>
+            <p>
+                Penambahan warna di dalam poligon disebut teknik area filling atau polygon filling.  Dua cara umum adalah Boundary Fill Algorithm dan Scan Line Polygon Fill Algorithm. 
+            </p>
+            <h4>Simulasi Scan Line Fill (Konseptual)</h4>
+            <p>
+                Teknik *Scan Line* mengisi poligon secara horizontal dari kiri ke kanan.  Ini melibatkan pencarian titik perpotongan garis scan dengan edge poligon, mengurutkannya berdasarkan koordinat X, lalu mewarnai piksel di antara pasangan titik perpotongan tersebut.  Aturan paritas ganjil-genap (odd-even rule) digunakan untuk menentukan apakah piksel berada di dalam atau di luar poligon. 
+            </p>
+            <div class="input-group">
+                <label>Titik Poligon (pisahkan dengan koma, misal: 100,50, 200,50, 150,150):</label>
+                <input type="text" id="polygonPointsInput" value="100,50, 200,50, 150,150, 50,150" style="width: calc(100% - 20px);">
+                <button onclick="drawPolygonAndSimulateFill()">Gambar Poligon & Simulasi Fill</button>
+                <button onclick="clearCanvas('polygonCanvas')">Bersihkan</button>
+            </div>
+            <canvas id="polygonCanvas" width="500" height="350"></canvas>
+            <div class="output-box" id="polygonOutput">
+                </div>
+            <p>
+                Simulasi ini akan menyederhanakan proses filling dan tidak menampilkan setiap piksel yang diwarnai secara detail, tetapi akan menunjukkan area yang "diisi" secara konseptual. Implementasi penuh algoritma filling cukup kompleks.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // --- Input Validation Function (Re-used from previous material) ---
+        function validateInput(inputElement) {
+            const value = parseInt(inputElement.value);
+            const min = parseInt(inputElement.min);
+            const max = parseInt(inputElement.max);
+
+            if (isNaN(value)) {
+                inputElement.setCustomValidity('Harap masukkan angka.');
+                inputElement.reportValidity();
+                return false;
+            } else if (value < min || value > max) {
+                inputElement.setCustomValidity(`Nilai harus antara ${min} dan ${max}.`);
+                inputElement.reportValidity();
+                return false;
+            } else {
+                inputElement.setCustomValidity(''); // Clear custom validation message
+                return true;
+            }
+        }
+
+        // Add event listeners for all number inputs to validate on change/input
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', function() {
+                validateInput(this);
+            });
+            input.addEventListener('change', function() {
+                // Also re-validate on change to catch final values
+                validateInput(this);
+            });
+        });
+
+        // Inisialisasi Canvas Context
+        const pointCanvas = document.getElementById("pointCanvas");
+        const pointCtx = pointCanvas.getContext("2d");
+        const lineCanvas = document.getElementById("lineCanvas");
+        const lineCtx = lineCanvas.getContext("2d");
+        const polygonCanvas = document.getElementById("polygonCanvas");
+        const polygonCtx = polygonCanvas.getContext("2d");
+
+        // Helper untuk menggambar piksel (kotak kecil)
+        const PIXEL_SIZE = 2; // Ukuran fisik piksel yang digambar di kanvas
+        function drawPixel(ctx, x, y, color = "black") {
+            // Transformasi koordinat Y agar positif ke atas (Kartesius)
+            // (0,0) di canvas biasanya di kiri atas, y ke bawah positif
+            // Kita ingin (0,0) di kiri bawah, y ke atas positif
+            const transformedY = ctx.canvas.height - y;
+            ctx.fillStyle = color;
+            ctx.fillRect(x, transformedY, PIXEL_SIZE, PIXEL_SIZE);
+        }
+
+        // Helper untuk menggambar titik kontrol
+        function drawControlPoint(ctx, x, y, label, color = "red", size = 5) {
+            const transformedY = ctx.canvas.height - y;
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, transformedY, size, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillStyle = "black";
+            ctx.fillText(label, x + size + 2, transformedY + size / 2);
+        }
+
+        function clearCanvas(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Reset output list if any
+            if (canvasId === 'lineCanvas') {
+                document.getElementById('linePointsList').innerHTML = '';
+            }
+            if (canvasId === 'polygonCanvas') {
+                document.getElementById('polygonOutput').innerHTML = '';
+            }
+        }
+
+        // --- 1. Visualisasi Titik dan Koordinat Kartesius ---
+        function drawPoint() {
+            pointCtx.clearRect(0, 0, pointCanvas.width, pointCanvas.height); // Bersihkan setiap kali gambar
+            
+            const pointXInput = document.getElementById("pointX");
+            const pointYInput = document.getElementById("pointY");
+
+            if (!validateInput(pointXInput) || !validateInput(pointYInput)) {
+                return; // Stop if validation fails
+            }
+
+            const x = parseInt(pointXInput.value);
+            const y = parseInt(pointYInput.value);
+
+            // Gambar Grid (opsional, untuk visualisasi sumbu)
+            drawGrid(pointCtx, pointCanvas.width, pointCanvas.height);
+
+            // Gambar sumbu X dan Y
+            pointCtx.strokeStyle = "#888";
+            pointCtx.lineWidth = 1;
+            pointCtx.beginPath();
+            pointCtx.moveTo(0, pointCanvas.height); // Sumbu X
+            pointCtx.lineTo(pointCanvas.width, pointCanvas.height);
+            pointCtx.moveTo(0, 0); // Sumbu Y (tetap dari atas ke bawah untuk rendering canvas)
+            pointCtx.lineTo(0, pointCanvas.height);
+            pointCtx.stroke();
+            pointCtx.fillStyle = "black";
+            pointCtx.fillText("X", pointCanvas.width - 15, pointCanvas.height - 5);
+            pointCtx.fillText("Y", 5, 15);
+            pointCtx.fillText("(0,0)", 5, pointCanvas.height - 5);
+
+
+            drawControlPoint(pointCtx, x, y, `(${x},${y})`, "blue", 4);
+            document.getElementById("pointInfo").textContent = `Titik saat ini: (${x}, ${y}).`;
+        }
+
+        function drawGrid(ctx, width, height, spacing = 20) {
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 0.5;
+            // Horizontal lines
+            for (let i = 0; i <= height; i += spacing) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(width, i);
+                ctx.stroke();
+            }
+            // Vertical lines
+            for (let i = 0; i <= width; i += spacing) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, height);
+                ctx.stroke();
+            }
+        }
+
+
+        // Panggil saat pertama kali dimuat
+        drawPoint();
+
+        // --- 2. Algoritma Pembentukan Garis ---
+        const linePointsList = document.getElementById('linePointsList');
+        function addPixelToList(x, y) {
+            const li = document.createElement('div');
+            li.classList.add('point-item');
+            li.textContent = `(${x}, ${y})`;
+            linePointsList.appendChild(li);
+            linePointsList.scrollTop = linePointsList.scrollHeight; // Auto-scroll
+        }
+
+        function drawLine() {
+            lineCtx.clearRect(0, 0, lineCanvas.width, lineCanvas.height);
+            linePointsList.innerHTML = ''; // Clear previous points
+
+            const x1Input = document.getElementById("x1");
+            const y1Input = document.getElementById("y1");
+            const x2Input = document.getElementById("x2");
+            const y2Input = document.getElementById("y2");
+
+            if (!validateInput(x1Input) || !validateInput(y1Input) || 
+                !validateInput(x2Input) || !validateInput(y2Input)) {
+                return; // Stop if validation fails
+            }
+
+            let x1 = parseInt(x1Input.value);
+            let y1 = parseInt(y1Input.value);
+            let x2 = parseInt(x2Input.value);
+            let y2 = parseInt(y2Input.value);
+
+            // Draw control points
+            drawControlPoint(lineCtx, x1, y1, 'A', 'green');
+            drawControlPoint(lineCtx, x2, y2, 'B', 'green');
+
+            const algorithm = document.getElementById("lineAlgorithm").value;
+            
+            // Atur imageSmoothingEnabled = false untuk melihat pikselasi
+            lineCtx.imageSmoothingEnabled = false;
+
+            if (algorithm === "bruteForce") {
+                drawLineBruteForce(x1, y1, x2, y2);
+            } else if (algorithm === "dda") {
+                drawLineDDA(x1, y1, x2, y2);
+            } else if (algorithm === "bresenham") {
+                drawLineBresenham(x1, y1, x2, y2);
+            }
+        }
+
+        function drawLineBruteForce(x1, y1, x2, y2) {
+            let points = [];
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+
+            // Handle vertical line
+            if (dx === 0) { 
+                for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
+                    points.push({x: x1, y: y});
+                }
+            } 
+            // Handle horizontal line
+            else if (dy === 0) { 
+                for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
+                    points.push({x: x, y: y1});
+                }
+            } 
+            else {
+                const m = dy / dx;
+                const c = y1 - m * x1;
+
+                if (Math.abs(m) <= 1) { // Iterate over X
+                    const startX = Math.min(x1, x2);
+                    const endX = Math.max(x1, x2);
+                    for (let x = startX; x <= endX; x++) {
+                        const y = m * x + c;
+                        points.push({x: x, y: Math.round(y)});
+                    }
+                } else { // Iterate over Y
+                    const startY = Math.min(y1, y2);
+                    const endY = Math.max(y1, y2);
+                    for (let y = startY; y <= endY; y++) {
+                        const x = (y - c) / m;
+                        points.push({x: Math.round(x), y: y});
+                    }
+                }
+            }
+
+            points.forEach(p => {
+                drawPixel(lineCtx, p.x, p.y);
+                addPixelToList(p.x, p.y);
+            });
+        }
+
+        function drawLineDDA(x1, y1, x2, y2) {
+            let points = [];
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+
+            const steps = Math.max(Math.abs(dx), Math.abs(dy));
+
+            if (steps === 0) { // Handle single point case
+                points.push({x: x1, y: y1});
+            } else {
+                const x_inc = dx / steps;
+                const y_inc = dy / steps;
+
+                let x = x1;
+                let y = y1;
+
+                for (let i = 0; i <= steps; i++) {
+                    points.push({x: Math.round(x), y: Math.round(y)});
+                    x += x_inc;
+                    y += y_inc;
+                }
+            }
+            
+            points.forEach(p => {
+                drawPixel(lineCtx, p.x, p.y);
+                addPixelToList(p.x, p.y);
+            });
+        }
+
+        function drawLineBresenham(x1, y1, x2, y2) {
+            let points = [];
+            let dx = Math.abs(x2 - x1);
+            let dy = Math.abs(y2 - y1);
+            let sx = (x1 < x2) ? 1 : -1;
+            let sy = (y1 < y2) ? 1 : -1;
+            let err = dx - dy;
+
+            let x = x1;
+            let y = y1;
+
+            while (true) {
+                points.push({x: x, y: y});
+
+                if (x === x2 && y === y2) break;
+
+                let e2 = 2 * err;
+                if (e2 > -dy) {
+                    err -= dy;
+                    x += sx;
+                }
+                if (e2 < dx) {
+                    err += dx;
+                    y += sy;
+                }
+            }
+
+            points.forEach(p => {
+                drawPixel(lineCtx, p.x, p.y);
+                addPixelToList(p.x, p.y);
+            });
+        }
+
+        // Panggil saat pertama kali dimuat
+        drawLine();
+
+        // --- 3. Poligon dan Filling ---
+        function drawPolygonAndSimulateFill() {
+            polygonCtx.clearRect(0, 0, polygonCanvas.width, polygonCanvas.height);
+            document.getElementById('polygonOutput').innerHTML = '';
+
+            const inputString = document.getElementById("polygonPointsInput").value;
+            const coords = inputString.split(',').map(s => parseInt(s.trim()));
+            const vertices = [];
+
+            // Simple validation for polygon points input
+            if (coords.length % 2 !== 0 || coords.length < 6 || coords.some(isNaN)) {
+                document.getElementById('polygonOutput').textContent = "Input tidak valid. Harap masukkan setidaknya 3 pasang koordinat (x,y) dipisahkan koma. Contoh: 100,50, 200,50, 150,150";
+                return;
+            }
+
+            for (let i = 0; i < coords.length; i += 2) {
+                vertices.push({ x: coords[i], y: coords[i+1] });
+            }
+
+            if (vertices.length < 3) {
+                document.getElementById('polygonOutput').textContent = "Poligon membutuhkan setidaknya 3 titik.";
+                return;
+            }
+
+            // Draw the polygon outline
+            polygonCtx.beginPath();
+            polygonCtx.moveTo(vertices[0].x, polygonCanvas.height - vertices[0].y);
+            for (let i = 1; i < vertices.length; i++) {
+                polygonCtx.lineTo(vertices[i].x, polygonCanvas.height - vertices[i].y);
+            }
+            polygonCtx.closePath();
+            polygonCtx.strokeStyle = "purple";
+            polygonCtx.lineWidth = 2;
+            polygonCtx.stroke();
+
+            // Simulate Scan Line Fill (Conceptual)
+            const minY = Math.min(...vertices.map(v => v.y));
+            const maxY = Math.max(...vertices.map(v => v.y));
+
+            polygonCtx.fillStyle = "rgba(100, 200, 255, 0.3)"; // Light blue transparent fill
+            polygonCtx.strokeStyle = "rgba(100, 200, 255, 0.6)";
+            polygonCtx.lineWidth = 0.5;
+
+            // Draw horizontal scan lines for visual effect
+            for (let y = minY; y <= maxY; y += 5) { // Increment by 5 for visible lines
+                polygonCtx.beginPath();
+                polygonCtx.moveTo(0, polygonCanvas.height - y);
+                polygonCtx.lineTo(polygonCanvas.width, polygonCanvas.height - y);
+                polygonCtx.stroke();
+            }
+
+            // A very simplified "fill"
+            polygonCtx.fillStyle = "rgba(255, 165, 0, 0.4)"; // Orange transparent for fill
+            polygonCtx.beginPath();
+            polygonCtx.moveTo(vertices[0].x, polygonCanvas.height - vertices[0].y);
+            for (let i = 1; i < vertices.length; i++) {
+                polygonCtx.lineTo(vertices[i].x, polygonCanvas.height - vertices[i].y);
+            }
+            polygonCtx.closePath();
+            polygonCtx.fill();
+
+
+            document.getElementById('polygonOutput').innerHTML = `
+                Poligon digambar dengan ${vertices.length} verteks.
+                <p>Simulasi mengisi area poligon dengan teknik Scan Line.</p>
+                <p>Untuk implementasi penuh, algoritma Scan Line akan menghitung titik-titik perpotongan horizontal dengan setiap sisi poligon, mengurutkannya, dan mengisi piksel di antara pasangan titik perpotongan (berdasarkan aturan paritas ganjil/genap).</p>
+            `;
+             // Draw vertices for polygon
+             vertices.forEach((v, index) => {
+                drawControlPoint(polygonCtx, v.x, v.y, `V${index}`, 'blue', 3);
+            });
+        }
+
+        // Panggil saat pertama kali dimuat
+        drawPolygonAndSimulateFill();
+
+        // Ini untuk merender rumus MathJax
+        document.addEventListener("DOMContentLoaded", function() {
+            if (typeof MathJax !== 'undefined') {
+                MathJax.typeset();
+            }
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html>

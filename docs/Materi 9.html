@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Grafika Komputer: Refleksi dan Shear</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f7f9fc; color: #333; line-height: 1.6; }
+        .container { max-width: 950px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 5px 25px rgba(0,0,0,0.15); }
+        h2, h3 { color: #004085; text-align: center; margin-bottom: 25px; border-bottom: 2px solid #a8cde0; padding-bottom: 10px; }
+        .section { background: #fdfefe; padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #d0e6f8; }
+        .section h3 { color: #0056b3; text-align: left; border-bottom: 1px solid #e0f0ff; padding-bottom: 8px; margin-bottom: 20px; }
+        .input-group { display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.9em; }
+        .input-group span { font-weight: bold; min-width: 20px; }
+        .input-group label { display:flex; align-items:center; gap: 5px; }
+        input[type="number"] { width: 60px; padding: 8px; border: 1px solid #cce0f0; border-radius: 5px; text-align: center; }
+        select { width: auto; padding: 8px; border: 1px solid #cce0f0; border-radius: 5px; }
+        input[type="range"]{ width: 100%; }
+        canvas { border: 2px solid #aaa; background-color: #fdfdfd; display: block; margin: 20px auto; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        .output-box { background: #e9f0f7; border: 1px solid #cce0f0; padding: 15px; border-radius: 8px; margin-top: 15px; font-family: monospace; white-space: pre-wrap; word-wrap: break-word; font-size: 0.9em; }
+        .controls-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .control-box { border: 1px dashed #e0f0ff; padding: 15px; border-radius: 8px; }
+        h4 { margin-top: 0; color: #004085; }
+        pre { background-color: #f0f4f7; padding: 15px; border-radius: 8px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 0.85em; color: #555; border: 1px solid #dee9f2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Grafika Komputer: Refleksi dan Shear</h2>
+
+        <div class="section">
+            <h3>1. Transformasi Refleksi (Pencerminan)</h3>
+            <p>Refleksi adalah transformasi yang membuat citra cermin (*mirror*) dari suatu objek. Ini melibatkan pembalikan posisi objek relatif terhadap suatu sumbu atau garis.</p>
+            <p>Rumus-rumus dasar untuk refleksi titik $(x, y)$ menjadi $(x', y')$ adalah:</p>
+            <ul>
+                <li><b>Refleksi terhadap Sumbu X (y=0):</b><pre>$x' = x \qquad y' = -y$</pre></li>
+                <li><b>Refleksi terhadap Sumbu Y (x=0):</b><pre>$x' = -x \qquad y' = y$</pre></li>
+                <li><b>Refleksi terhadap Garis y=x:</b><pre>$x' = y \qquad y' = x$</pre></li>
+                <li><b>Refleksi terhadap Garis y=-x:</b><pre>$x' = -y \qquad y' = -x$</pre></li>
+            </ul>
+
+            <div class="controls-row">
+                <div class="control-box">
+                    <h4>Objek Awal (Segitiga)</h4>
+                    <div class="input-group"><span>A:</span><label>X:<input type="number" id="num_refAx" value="20"></label><input type="range" id="slider_refAx"></div>
+                    <div class="input-group"><span></span><label>Y:<input type="number" id="num_refAy" value="20"></label><input type="range" id="slider_refAy"></div>
+                    <div class="input-group"><span>B:</span><label>X:<input type="number" id="num_refBx" value="100"></label><input type="range" id="slider_refBx"></div>
+                    <div class="input-group"><span></span><label>Y:<input type="number" id="num_refBy" value="20"></label><input type="range" id="slider_refBy"></div>
+                    <div class="input-group"><span>C:</span><label>X:<input type="number" id="num_refCx" value="60"></label><input type="range" id="slider_refCx"></div>
+                    <div class="input-group"><span></span><label>Y:<input type="number" id="num_refCy" value="100"></label><input type="range" id="slider_refCy"></div>
+                </div>
+                <div class="control-box">
+                    <h4>Kontrol Refleksi</h4>
+                    <label>Sumbu Refleksi:</label>
+                    <select id="reflectionAxis">
+                        <option value="x_axis">Sumbu X (y=0)</option>
+                        <option value="y_axis">Sumbu Y (x=0)</option>
+                        <option value="y_eq_x">Garis y=x</option>
+                        <option value="y_eq_neg_x">Garis y=-x</option>
+                    </select>
+                </div>
+            </div>
+            <canvas id="reflectionCanvas" width="400" height="300"></canvas>
+            <div class="output-box" id="reflectionOutput"></div>
+        </div>
+
+        <div class="section">
+            <h3>2. Transformasi Shear (Geser)</h3>
+            <p>Shear mendistorsi bentuk objek dengan menggeser satu sisi relatif terhadap sumbu koordinat.</p>
+             <ul>
+                <li><b>Shear terhadap Sumbu X:</b> Menggeser koordinat x secara proporsional terhadap nilai y. <pre>$x' = x + sh_x \cdot y \qquad y' = y$</pre></li>
+                <li><b>Shear terhadap Sumbu Y:</b> Menggeser koordinat y secara proporsional terhadap nilai x. <pre>$x' = x \qquad y' = y + sh_y \cdot x$</pre></li>
+            </ul>
+             <div class="controls-row">
+                <div class="control-box">
+                    <h4>Objek Awal (Persegi)</h4>
+                    <div class="input-group"><span>A:</span><label>X:<input type="number" id="num_shAx" value="-50"></label><input type="range" id="slider_shAx"></div>
+                    <div class="input-group"><span></span><label>Y:<input type="number" id="num_shAy" value="-50"></label><input type="range" id="slider_shAy"></div>
+                    <div class="input-group"><span>B:</span><label>X:<input type="number" id="num_shBx" value="50"></label><input type="range" id="slider_shBx"></div>
+                    <div class="input-group"><span></span><label>Y:<input type="number" id="num_shBy" value="-50"></label><input type="range" id="slider_shBy"></div>
+                    <div class="input-group"><span>C:</span><label>X:<input type="number" id="num_shCx" value="50"></label><input type="range" id="slider_shCx"></div>
+                    <div class="input-group"><span></span><label>Y:<input type="number" id="num_shCy" value="50"></label><input type="range" id="slider_shCy"></div>
+                    <div class="input-group"><span>D:</span><label>X:<input type="number" id="num_shDx" value="-50"></label><input type="range" id="slider_shDx"></div>
+                    <div class="input-group"><span></span><label>Y:<input type="number" id="num_shDy" value="50"></label><input type="range" id="slider_shDy"></div>
+                </div>
+                <div class="control-box">
+                    <h4>Kontrol Shear</h4>
+                    <label>Tipe Shear:</label>
+                    <select id="shearType">
+                        <option value="x_shear">Shear X</option>
+                        <option value="y_shear">Shear Y</option>
+                    </select>
+                    <div class="input-group"><span>Faktor (sh):</span> <label><input type="range" id="shearFactor" min="-2" max="2" value="0.5" step="0.1" style="width: 150px;"></label> <span id="shearValue">0.5</span></div>
+                </div>
+            </div>
+            <canvas id="shearCanvas" width="400" height="300"></canvas>
+            <div class="output-box" id="shearOutput"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. SETUP DAN INISIALISASI ---
+        const ui = {
+            inputs: {}, contexts: {}, outputs: {}
+        };
+
+        function setupUI(ids) {
+            ids.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    if (element.nodeName === 'CANVAS') ui.contexts[id] = element.getContext('2d');
+                    else if (element.nodeName === 'INPUT' || element.nodeName === 'SELECT') ui.inputs[id] = element;
+                    else ui.outputs[id] = element;
+                }
+            });
+        }
+        
+        setupUI([
+            'reflectionCanvas', 'shearCanvas', 'reflectionOutput', 'shearOutput', 'shearValue', 'reflectionAxis', 'shearType', 'shearFactor',
+            'num_refAx', 'slider_refAx', 'num_refAy', 'slider_refAy', 'num_refBx', 'slider_refBx', 'num_refBy', 'slider_refBy', 'num_refCx', 'slider_refCx', 'num_refCy', 'slider_refCy',
+            'num_shAx', 'slider_shAx', 'num_shAy', 'slider_shAy', 'num_shBx', 'slider_shBx', 'num_shBy', 'slider_shBy', 'num_shCx', 'slider_shCx', 'num_shCy', 'slider_shCy', 'num_shDx', 'slider_shDx', 'num_shDy', 'slider_shDy'
+        ]);
+        
+        // --- 2. FUNGSI HELPER & LOGIKA INTI ---
+        function getPoints(idPrefix, pointLabels) {
+            const points = [];
+            pointLabels.forEach(label => {
+                points.push({
+                    x: parseFloat(ui.inputs[`num_${idPrefix}${label}x`].value) || 0,
+                    y: parseFloat(ui.inputs[`num_${idPrefix}${label}y`].value) || 0,
+                });
+            });
+            return points;
+        }
+
+        function drawAxes(ctx) {
+            const { width: w, height: h } = ctx.canvas;
+            const hMid = w / 2;
+            const vMid = h / 2;
+            ctx.strokeStyle = "#f0f0f0"; ctx.lineWidth = 1;
+            for (let i = hMid % 20; i < w; i += 20) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke(); }
+            for (let i = vMid % 20; i < h; i += 20) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(w, i); ctx.stroke(); }
+            ctx.strokeStyle = "#ccc"; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(0, vMid); ctx.lineTo(w, vMid); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(hMid, 0); ctx.lineTo(hMid, h); ctx.stroke();
+        }
+
+        function drawPolygon(ctx, points, color = 'black', fill = false) {
+            if (points.length < 2) return;
+            const { width: w, height: h } = ctx.canvas;
+            const hMid = w / 2; const vMid = h / 2;
+            ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(points[0].x + hMid, -points[0].y + vMid);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x + hMid, -points[i].y + vMid);
+            }
+            ctx.closePath();
+            fill ? ctx.fill() : ctx.stroke();
+        }
+        
+        function pointsToString(points, name) {
+            let str = `Koordinat ${name}:\n`;
+            points.forEach((p, i) => {
+                str += `${String.fromCharCode(65 + i)}: (${p.x.toFixed(1)}, ${p.y.toFixed(1)})\n`;
+            });
+            return str;
+        }
+
+        // --- 3. FUNGSI UTAMA UNTUK SETIAP SIMULASI ---
+        function runReflectionSimulation() {
+            const ctx = ui.contexts.reflectionCanvas;
+            const { width: w, height: h } = ctx.canvas;
+            ctx.clearRect(0, 0, w, h);
+            drawAxes(ctx);
+
+            const originalPoints = getPoints('ref', ['A', 'B', 'C']);
+            const axis = ui.inputs.reflectionAxis.value;
+            
+            const reflectedPoints = originalPoints.map(p => {
+                if (axis === 'x_axis') return { x: p.x, y: -p.y };
+                if (axis === 'y_axis') return { x: -p.x, y: p.y };
+                if (axis === 'y_eq_x') return { x: p.y, y: p.x };
+                if (axis === 'y_eq_neg_x') return { x: -p.y, y: -p.x };
+                return p;
+            });
+            
+            ctx.beginPath(); ctx.setLineDash([5, 5]); ctx.strokeStyle = 'rgba(255, 0, 0, 0.7)'; ctx.lineWidth = 1;
+            if(axis === 'y_eq_x') { ctx.moveTo(0, h); ctx.lineTo(w, 0); }
+            if(axis === 'y_eq_neg_x') { ctx.moveTo(0, 0); ctx.lineTo(w, h); }
+            ctx.stroke(); ctx.setLineDash([]);
+            
+            drawPolygon(ctx, originalPoints, 'gray');
+            drawPolygon(ctx, reflectedPoints, 'blue', true);
+            
+            ui.outputs.reflectionOutput.textContent = pointsToString(originalPoints, "Awal") + "\n" + pointsToString(reflectedPoints, "Setelah Refleksi");
+        }
+
+        function runShearSimulation() {
+            const ctx = ui.contexts.shearCanvas;
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            drawAxes(ctx);
+
+            const originalPoints = getPoints('sh', ['A', 'B', 'C', 'D']);
+            const shearType = ui.inputs.shearType.value;
+            const sh = parseFloat(ui.inputs.shearFactor.value);
+            ui.outputs.shearValue.textContent = sh.toFixed(1);
+
+            const shearedPoints = originalPoints.map(p => {
+                if (shearType === 'x_shear') return { x: p.x + sh * p.y, y: p.y };
+                if (shearType === 'y_shear') return { x: p.x, y: p.y + sh * p.x };
+                return p;
+            });
+
+            drawPolygon(ctx, originalPoints, 'gray');
+            drawPolygon(ctx, shearedPoints, 'green', true);
+            
+            ui.outputs.shearOutput.textContent = pointsToString(originalPoints, "Awal") + "\n" + pointsToString(shearedPoints, "Setelah Shear");
+        }
+        
+        // --- 4. EVENT LISTENERS DAN INISIALISASI ---
+        function syncInputs(numberInput, sliderInput) {
+            sliderInput.value = numberInput.value;
+            numberInput.value = sliderInput.value;
+        }
+
+        function setupDualInputs(prefix, pointLabels, xRange, yRange) {
+            pointLabels.forEach(label => {
+                const numX = ui.inputs[`num_${prefix}${label}x`];
+                const sliderX = ui.inputs[`slider_${prefix}${label}x`];
+                const numY = ui.inputs[`num_${prefix}${label}y`];
+                const sliderY = ui.inputs[`slider_${prefix}${label}y`];
+
+                [sliderX.min, sliderX.max] = xRange;
+                [sliderY.min, sliderY.max] = yRange;
+                [numX.min, numX.max] = xRange;
+                [numY.min, numY.max] = yRange;
+                sliderX.step = sliderY.step = 1;
+                
+                sliderX.value = numX.value;
+                sliderY.value = numY.value;
+
+                sliderX.addEventListener('input', () => { numX.value = sliderX.value; runAllSimulations(); });
+                numX.addEventListener('input', () => { sliderX.value = numX.value; runAllSimulations(); });
+                sliderY.addEventListener('input', () => { numY.value = sliderY.value; runAllSimulations(); });
+                numY.addEventListener('input', () => { sliderY.value = numY.value; runAllSimulations(); });
+            });
+        }
+        
+        function runAllSimulations() {
+            runReflectionSimulation();
+            runShearSimulation();
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            setupDualInputs('ref', ['A', 'B', 'C'], ['-200', '200'], ['-150', '150']);
+            setupDualInputs('sh', ['A', 'B', 'C', 'D'], ['-200', '200'], ['-150', '150']);
+
+            ui.inputs.reflectionAxis.addEventListener('input', runAllSimulations);
+            ui.inputs.shearType.addEventListener('input', runAllSimulations);
+            ui.inputs.shearFactor.addEventListener('input', runAllSimulations);
+            
+            runAllSimulations();
+        });
+    </script>
+</body>
+</html>

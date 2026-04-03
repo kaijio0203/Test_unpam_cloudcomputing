@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Grafika Komputer: Algoritma Kurva Bezier</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f7f9fc;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+        }
+        h2, h3 {
+            color: #004085;
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #a8cde0;
+            padding-bottom: 10px;
+        }
+        .section {
+            background: #fdfefe;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid #d0e6f8;
+        }
+        .section h3 {
+            color: #0056b3;
+            text-align: left;
+            border-bottom: 1px solid #e0f0ff;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 8px;
+        }
+        input[type="number"] {
+            width: 70px;
+            padding: 8px;
+            border: 1px solid #cce0f0;
+            border-radius: 5px;
+            text-align: center;
+            margin-right: 5px;
+        }
+        button {
+            padding: 10px 18px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #218838;
+            transform: translateY(-1px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        canvas {
+            border: 2px solid #aaa;
+            background-color: #fdfdfd;
+            display: block;
+            margin: 20px auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        .output-box {
+            background: #e9f0f7;
+            border: 1px solid #cce0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 0.9em;
+        }
+        .control-points-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+            border: 1px dashed #e0f0ff;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .control-point-input {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .control-point-input span {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .algorithm-select label, .algorithm-select select {
+            margin-right: 15px;
+        }
+        pre {
+            background-color: #f0f4f7;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: #555;
+            border: 1px solid #dee9f2;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+        table, th, td {
+            border: 1px solid #bbb;
+            text-align: center;
+            padding: 8px;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Grafika Komputer: Algoritma Pembuatan Kurva (Bezier)</h2>
+
+        <div class="section">
+            <h3>1. Pengertian Kurva Bezier</h3>
+            <p>
+                Dalam matematika, kurva adalah objek geometri satu dimensi yang kontinyu dan membentuk lengkungan. Kurva Bezier adalah jenis kurva parametrik yang digunakan dalam grafika komputer untuk menghasilkan kurva yang halus. Algoritma ini diusulkan oleh insinyur Prancis Pierre Bezier dari perusahaan Renault pada tahun 1960-an untuk desain bodi mobil. 
+            </p>
+            <p>
+                Kurva Bezier awal (kubik) terdiri dari 4 titik: titik awal, titik akhir, dan dua titik kontrol. 
+            </p>
+
+            <h4>Jenis Kurva Berdasarkan Titik Kontrol:</h4>
+            <ul>
+                <li>Kurva Linier: Dibentuk dari 2 titik kontrol (P0, P1). </li>
+                <li>Kurva Kuadratik: Dibentuk dari 3 titik kontrol (P0, P1, P2).</li>
+                <li>Kurva Kubik: Dibentuk dari 4 titik kontrol (P0, P1, P2, P3). </li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h3>2. Algoritma Kurva Bezier Interaktif</h3>
+            <p>
+                Kurva Bezier didefinisikan oleh sekumpulan "titik kontrol" dan menggunakan Polinomial Bernstein.  Kurva selalu dimulai pada titik kontrol pertama (P_0) dan berakhir pada titik kontrol terakhir (P_n), tetapi mungkin tidak melewati titik kontrol di antaranya.  Parameter t bervariasi dari 0 hingga 1.  Semakin kecil nilai Delta t, semakin banyak titik yang dihitung, dan kurva yang dihasilkan akan semakin halus. 
+            </p>
+
+            <div class="input-group">
+                <label for="numControlPoints">Jumlah Titik Kontrol (N+1):</label>
+                <select id="numControlPoints" onchange="updateControlPointInputs()">
+                    <option value="2">2 (Linier)</option>
+                    <option value="3">3 (Kuadratik)</option>
+                    <option value="4" selected>4 (Kubik)</option>
+                    <option value="5">5</option>
+                </select>
+                <label for="dt">Δt: <input type="number" step="0.01" id="dt" value="0.01" min="0.001" max="0.5"></label>
+                <button onclick="drawBezierCurve()">Gambar Kurva Bezier</button>
+                <button onclick="clearCanvas('bezierCanvas')">Bersihkan</button>
+            </div>
+
+            <div class="control-points-container" id="controlPointsContainer">
+                </div>
+
+            <canvas id="bezierCanvas" width="600" height="400"></canvas>
+
+            <div class="output-box" id="bezierOutput">
+                Jumlah titik yang akan digambar: <span id="numCalculatedPoints"></span>
+                <table id="bezierPointsTable">
+                    <thead><tr><th>t</th><th>X(t)</th><th>Y(t)</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <h4>Persamaan Umum Kurva Bezier (B(t)) dengan n Titik Kontrol (dari P_0 hingga P_n):</h4>
+            <pre>
+B(t) = \sum_{i=0}^{n} \binom{n}{i} t^i (1-t)^{n-i} P_i
+            </pre>
+            <p>Di mana \binom{n}{i}$ adalah koefisien binomial, yang dapat diperoleh dari Segitiga Pascal. </p>
+
+            <h4>Segitiga Pascal dan Koefisien Binomial:</h4>
+            <pre id="pascalTriangle">
+n=0:        1
+n=1:       1 1
+n=2:      1 2 1
+n=3:     1 3 3 1
+n=4:    1 4 6 4 1
+...
+            </pre>
+            <p>Contoh: Untuk kurva kubik (n=3), koefisiennya adalah 1, 3, 3, 1.</p>
+
+            <h4>Contoh Perhitungan (n=3, Kubik)</h4>
+            <p>Jika P0=(x0,y0), P1=(x1,y1), P2=(x2,y2), P3=(x3,y3):</p>
+            <pre>
+X(t) = (1-t)^3 x_0 + 3(1-t)^2 t x_1 + 3(1-t) t^2 x_2 + t^3 x_3
+Y(t) = (1-t)^3 y_0 + 3(1-t)^2 t y_1 + 3(1-t) t^2 y_2 + t^3 y_3
+            </pre>
+            <p>
+                Contoh dari materi untuk t=0.8 dan P0=(1,2), P1=(7,10), P2=(15,4):
+                <br>
+                X(0.8) = (1-0.8)^2 \times 1 + 2(1-0.8)(0.8) \times 7 + (0.8)^2 \times 15
+                = 0.04 \times 1 + 0.32 \times 7 + 0.64 \times 15
+                = 0.04 + 2.24 + 9.6 = 11.88 \approx 12
+                <br>
+                Y(0.8) = (1-0.8)^2 \times 2 + 2(1-0.8)(0.8) \times 10 + (0.8)^2 \times 4
+                = 0.04 \times 2 + 0.32 \times 10 + 0.64 \times 4
+                = 0.08 + 3.2 + 2.56 = 5.84 \approx 6
+                <br>
+                Maka titik pada t=0.8 adalah (12,6)
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // --- FUNGSI VALIDASI BARU ---
+        function validateInput(inputElement) {
+            // Gunakan parseFloat karena ada input desimal (seperti dt)
+            const value = parseFloat(inputElement.value);
+            const min = parseFloat(inputElement.min);
+            const max = parseFloat(inputElement.max);
+
+            if (isNaN(value)) {
+                inputElement.setCustomValidity('Harap masukkan angka.');
+                return false;
+            } else if (value < min || value > max) {
+                inputElement.setCustomValidity(`Nilai harus antara ${min} dan ${max}.`);
+                return false;
+            } else {
+                inputElement.setCustomValidity(''); // Hapus pesan error jika valid
+                return true;
+            }
+        }
+
+        // Inisialisasi Canvas Context
+        const bezierCanvas = document.getElementById("bezierCanvas");
+        const bezierCtx = bezierCanvas.getContext("2d");
+        const bezierPointsTableBody = document.querySelector("#bezierPointsTable tbody");
+        const numControlPointsSelect = document.getElementById("numControlPoints");
+        const controlPointsContainer = document.getElementById("controlPointsContainer");
+
+        // --- Helper Functions ---
+        function clearCanvas(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (canvasId === 'bezierCanvas') {
+                bezierPointsTableBody.innerHTML = '';
+                document.getElementById('numCalculatedPoints').textContent = '';
+            }
+        }
+
+        function drawControlPoint(ctx, x, y, label, color = "red", size = 4) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillStyle = "black";
+            ctx.fillText(label, x + size + 2, y + size / 2);
+        }
+
+        function factorial(n) {
+            if (n === 0 || n === 1) return 1;
+            let res = 1;
+            for (let i = 2; i <= n; i++) {
+                res *= i;
+            }
+            return res;
+        }
+
+        function binomialCoefficient(n, i) {
+            return factorial(n) / (factorial(i) * factorial(n - i));
+        }
+
+        // --- Bezier Curve Logic ---
+
+        function updateControlPointInputs() {
+            const numPoints = parseInt(numControlPointsSelect.value);
+            controlPointsContainer.innerHTML = ''; 
+
+            for (let i = 0; i < numPoints; i++) {
+                const div = document.createElement('div');
+                div.classList.add('control-point-input');
+                const defaultX = i * 100 + 50; 
+                const defaultY = (i % 2 === 0) ? 300 : 100;
+                
+                div.innerHTML = `
+                    <span>P${i} (x, y):</span>
+                    <input type="number" id="px${i}" value="${defaultX}" min="0" max="600">
+                    <input type="number" id="py${i}" value="${defaultY}" min="0" max="400">
+                `;
+                controlPointsContainer.appendChild(div);
+            }
+
+            // Tambahkan event listener ke input yang baru dibuat
+            controlPointsContainer.querySelectorAll('input[type="number"]').forEach(input => {
+                input.addEventListener('input', function() {
+                    validateInput(this);
+                });
+            });
+
+            drawBezierCurve();
+            updatePascalTriangle(numPoints - 1);
+        }
+
+        function updatePascalTriangle(nMax) {
+            let triangleHtml = '';
+            for (let n = 0; n <= nMax + 2; n++) {
+                triangleHtml += `n=${n}: `;
+                for (let i = 0; i <= n; i++) {
+                    triangleHtml += `${binomialCoefficient(n, i)} `;
+                }
+                triangleHtml += '\n';
+            }
+            document.getElementById('pascalTriangle').textContent = triangleHtml;
+        }
+
+        function drawBezierCurve() {
+            // --- Validasi semua input sebelum menggambar ---
+            const inputsToValidate = document.querySelectorAll('.control-points-container input[type="number"], #dt');
+            let firstInvalidElement = null;
+            
+            for (const input of inputsToValidate) {
+                if (!validateInput(input)) {
+                    if (!firstInvalidElement) {
+                        firstInvalidElement = input;
+                    }
+                }
+            }
+
+            if (firstInvalidElement) {
+                firstInvalidElement.reportValidity(); // Tampilkan popup pada elemen pertama yang salah
+                return; // Hentikan eksekusi jika ada yang tidak valid
+            }
+            // --- Akhir dari blok validasi ---
+
+
+            clearCanvas('bezierCanvas');
+            const numPoints = parseInt(numControlPointsSelect.value);
+            const dt = parseFloat(document.getElementById("dt").value);
+
+            const controlPoints = [];
+            for (let i = 0; i < numPoints; i++) {
+                const x = parseFloat(document.getElementById(`px${i}`).value);
+                const y = parseFloat(document.getElementById(`py${i}`).value);
+                controlPoints.push({ x: x, y: y });
+            }
+
+            controlPoints.forEach((p, index) => {
+                drawControlPoint(bezierCtx, p.x, p.y, `P${index}`, 'red');
+            });
+
+            if (controlPoints.length > 1) {
+                bezierCtx.beginPath();
+                bezierCtx.moveTo(controlPoints[0].x, controlPoints[0].y);
+                for (let i = 1; i < controlPoints.length; i++) {
+                    bezierCtx.lineTo(controlPoints[i].x, controlPoints[i].y);
+                }
+                bezierCtx.strokeStyle = "rgba(0, 0, 0, 0.3)";
+                bezierCtx.lineWidth = 1;
+                bezierCtx.stroke();
+            }
+
+            bezierCtx.beginPath();
+            bezierCtx.moveTo(controlPoints[0].x, controlPoints[0].y);
+
+            const steps = Math.floor(1 / dt);
+            bezierPointsTableBody.innerHTML = '';
+
+            let actualCalculatedPoints = 0;
+
+            for (let i = 0; i <= steps; i++) {
+                const t = i * dt;
+                let currentX = 0;
+                let currentY = 0;
+
+                for (let j = 0; j < numPoints; j++) {
+                    const bernstein = binomialCoefficient(numPoints - 1, j) * Math.pow(t, j) * Math.pow(1 - t, numPoints - 1 - j);
+                    currentX += bernstein * controlPoints[j].x;
+                    currentY += bernstein * controlPoints[j].y;
+                }
+
+                bezierCtx.lineTo(currentX, currentY);
+
+                const row = document.createElement("tr");
+                row.innerHTML = `<td>${t.toFixed(2)}</td><td>${currentX.toFixed(2)}</td><td>${currentY.toFixed(2)}</td>`;
+                bezierPointsTableBody.appendChild(row);
+                actualCalculatedPoints++;
+            }
+            bezierCtx.strokeStyle = "blue";
+            bezierCtx.lineWidth = 2;
+            bezierCtx.stroke();
+
+            bezierCtx.fillStyle = "darkblue";
+            for (let i = 0; i <= steps; i++) {
+                const t = i * dt;
+                let currentX = 0;
+                let currentY = 0;
+
+                for (let j = 0; j < numPoints; j++) {
+                    const bernstein = binomialCoefficient(numPoints - 1, j) * Math.pow(t, j) * Math.pow(1 - t, numPoints - 1 - j);
+                    currentX += bernstein * controlPoints[j].x;
+                    currentY += bernstein * controlPoints[j].y;
+                }
+                bezierCtx.beginPath();
+                bezierCtx.arc(currentX, currentY, 2.5, 0, 2 * Math.PI);
+                bezierCtx.fill();
+            }
+
+            document.getElementById('numCalculatedPoints').textContent = actualCalculatedPoints;
+        }
+
+        // Panggil saat pertama kali dimuat
+        document.addEventListener("DOMContentLoaded", function() {
+            // Tambahkan listener untuk input dt yang statis
+            document.getElementById('dt').addEventListener('input', function() {
+                validateInput(this);
+            });
+            
+            updateControlPointInputs(); 
+            updatePascalTriangle(parseInt(numControlPointsSelect.value) - 1);
+            
+            if (typeof MathJax !== 'undefined') {
+                MathJax.typeset();
+            }
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html>

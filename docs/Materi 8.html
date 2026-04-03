@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Grafika Komputer: Transformasi 2D (Translasi & Rotasi)</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f7f9fc; color: #333; line-height: 1.6; }
+        .container { max-width: 950px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 5px 25px rgba(0,0,0,0.15); }
+        h2, h3 { color: #004085; text-align: center; margin-bottom: 25px; border-bottom: 2px solid #a8cde0; padding-bottom: 10px; }
+        .section { background: #fdfefe; padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #d0e6f8; }
+        .section h3 { color: #0056b3; text-align: left; border-bottom: 1px solid #e0f0ff; padding-bottom: 8px; margin-bottom: 20px; }
+        .input-group label { display: flex; align-items: center; gap: 5px; margin-bottom: 8px; font-weight: normal; font-size: 0.9em; }
+        .input-group span { font-weight: bold; min-width: 30px; }
+        input[type="number"] { width: 60px; padding: 8px; border: 1px solid #cce0f0; border-radius: 5px; text-align: center; margin-right: 5px; }
+        button { padding: 10px 18px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; transition: background-color 0.3s ease; margin-top: 10px; }
+        button:hover { background-color: #218838; }
+        canvas { border: 2px solid #aaa; background-color: #fdfdfd; display: block; margin: 20px auto; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        .output-box { background: #e9f0f7; border: 1px solid #cce0f0; padding: 15px; border-radius: 8px; margin-top: 15px; font-family: monospace; white-space: pre-wrap; word-wrap: break-word; font-size: 0.9em; }
+        .controls-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .control-box { border: 1px dashed #e0f0ff; padding: 15px; border-radius: 8px; }
+        h4 { margin-top: 0; color: #004085; }
+        pre { background-color: #f0f4f7; padding: 15px; border-radius: 8px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 0.85em; color: #555; border: 1px solid #dee9f2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Grafika Komputer: Transformasi, Translasi dan Rotasi</h2>
+
+        <div class="section">
+            <h3>1. Kontrol Objek Awal (Segitiga)</h3>
+            <p>Anda dapat mengubah posisi titik-titik segitiga awal di bawah ini. Perubahan akan langsung terlihat pada kedua simulasi.</p>
+            <div class="controls-row">
+                <div class="control-box">
+                    <div class="input-group"><span>A:</span> <label>X:<input type="number" id="ax" value="50" min="0" max="400"></label> <label>Y:<input type="number" id="ay" value="50" min="0" max="300"></label></div>
+                    <div class="input-group"><span>B:</span> <label>X:<input type="number" id="bx" value="150" min="0" max="400"></label> <label>Y:<input type="number" id="by" value="50" min="0" max="300"></label></div>
+                    <div class="input-group"><span>C:</span> <label>X:<input type="number" id="cx" value="100" min="0" max="400"></label> <label>Y:<input type="number" id="cy" value="150" min="0" max="300"></label></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>2. Transformasi Translasi</h3>
+            <p>Translasi adalah pergeseran objek. Setiap titik pada objek digeser sejauh vektor translasi $(t_x, t_y)$.</p>
+            <pre>$x' = x + t_x$,  $y' = y + t_y$</pre>
+            <div class="controls-row">
+                <div class="control-box">
+                    <h4>Kontrol Translasi</h4>
+                    <div class="input-group"><span>Tx:</span> <label><input type="range" id="translateX" min="-150" max="150" value="50" style="width: 150px;"></label> <span id="txValue">50</span></div>
+                    <div class="input-group"><span>Ty:</span> <label><input type="range" id="translateY" min="-150" max="150" value="30" style="width: 150px;"></label> <span id="tyValue">30</span></div>
+                </div>
+            </div>
+            <canvas id="translationCanvas" width="400" height="300"></canvas>
+            <div class="output-box" id="translationOutput"></div>
+        </div>
+
+        <div class="section">
+            <h3>3. Transformasi Rotasi</h3>
+            <p>Rotasi memutar objek mengelilingi sebuah titik pivot $(x_p, y_p)$ sebesar sudut $\theta$. Sudut positif berarti berlawanan arah jarum jam.</p>
+            <pre>$x' = x_p + (x - x_p)\cos\theta - (y - y_p)\sin\theta$
+$y' = y_p + (x - x_p)\sin\theta + (y - y_p)\cos\theta$</pre>
+            <div class="controls-row">
+                <div class="control-box">
+                    <h4>Kontrol Rotasi</h4>
+                    <div class="input-group"><span>Sudut (&theta;):</span> <label><input type="range" id="rotationAngle" min="-180" max="180" value="45" style="width: 150px;"></label> <span id="angleValue">45&deg;</span></div>
+                    <div class="input-group"><span>Pivot Px:</span> <label><input type="range" id="pivotX" min="0" max="400" value="100" style="width: 150px;"></label> <span id="pxValue">100</span></div>
+                    <div class="input-group"><span>Pivot Py:</span> <label><input type="range" id="pivotY" min="0" max="300" value="100" style="width: 150px;"></label> <span id="pyValue">100</span></div>
+                </div>
+            </div>
+            <canvas id="rotationCanvas" width="400" height="300"></canvas>
+            <div class="output-box" id="rotationOutput"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. SETUP DAN INISIALISASI ---
+        const ui = {
+            inputs: {
+                ax: document.getElementById('ax'), ay: document.getElementById('ay'),
+                bx: document.getElementById('bx'), by: document.getElementById('by'),
+                cx: document.getElementById('cx'), cy: document.getElementById('cy'),
+                tx: document.getElementById('translateX'), ty: document.getElementById('translateY'),
+                angle: document.getElementById('rotationAngle'),
+                px: document.getElementById('pivotX'), py: document.getElementById('pivotY')
+            },
+            contexts: {
+                translation: document.getElementById('translationCanvas').getContext('2d'),
+                rotation: document.getElementById('rotationCanvas').getContext('2d')
+            },
+            outputs: {
+                tx: document.getElementById('txValue'), ty: document.getElementById('tyValue'),
+                angle: document.getElementById('angleValue'),
+                px: document.getElementById('pxValue'), py: document.getElementById('pyValue'),
+                translation: document.getElementById('translationOutput'),
+                rotation: document.getElementById('rotationOutput')
+            }
+        };
+
+        // --- 2. FUNGSI HELPER & LOGIKA INTI ---
+        function validateInput(inputElement) { /* Fungsi validasi standar */ }
+        
+        // Membaca titik segitiga dari input
+        function getTrianglePoints() {
+            return [
+                { x: parseFloat(ui.inputs.ax.value) || 0, y: parseFloat(ui.inputs.ay.value) || 0 },
+                { x: parseFloat(ui.inputs.bx.value) || 0, y: parseFloat(ui.inputs.by.value) || 0 },
+                { x: parseFloat(ui.inputs.cx.value) || 0, y: parseFloat(ui.inputs.cy.value) || 0 }
+            ];
+        }
+
+        // Menggambar sumbu dan grid
+        function drawAxes(ctx) {
+            const canvas = ctx.canvas;
+            ctx.strokeStyle = "#f0f0f0";
+            ctx.lineWidth = 1;
+            for (let i = 20; i < canvas.width; i += 20) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke(); }
+            for (let i = 20; i < canvas.height; i += 20) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke(); }
+            ctx.strokeStyle = "#ccc";
+            ctx.beginPath(); ctx.moveTo(0, canvas.height / 2); ctx.lineTo(canvas.width, canvas.height / 2); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(canvas.width / 2, 0); ctx.lineTo(canvas.width / 2, canvas.height); ctx.stroke();
+        }
+
+        // Menggambar segitiga dengan konversi koordinat (Y-up)
+        function drawTriangle(ctx, points, color = 'black', fill = false) {
+            const h = ctx.canvas.height;
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, h - points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, h - points[i].y);
+            }
+            ctx.closePath();
+            fill ? ctx.fill() : ctx.stroke();
+        }
+        
+        function pointsToString(points, name) {
+            let str = `Koordinat ${name}:\n`;
+            points.forEach((p, i) => {
+                str += `${String.fromCharCode(65 + i)}: (${p.x.toFixed(1)}, ${p.y.toFixed(1)})\n`;
+            });
+            return str;
+        }
+
+        // --- 3. FUNGSI UTAMA UNTUK SETIAP SIMULASI ---
+        
+        function runTranslationSimulation() {
+            const ctx = ui.contexts.translation;
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            drawAxes(ctx);
+
+            const originalPoints = getTrianglePoints();
+            const tx = parseFloat(ui.inputs.tx.value);
+            const ty = parseFloat(ui.inputs.ty.value);
+            
+            ui.outputs.tx.textContent = tx;
+            ui.outputs.ty.textContent = ty;
+
+            const translatedPoints = originalPoints.map(p => ({ x: p.x + tx, y: p.y + ty }));
+
+            // Gambar visualisasi vektor translasi
+            ctx.beginPath();
+            ctx.setLineDash([5, 5]);
+            ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+            ctx.moveTo(originalPoints[0].x, ctx.canvas.height - originalPoints[0].y);
+            ctx.lineTo(translatedPoints[0].x, ctx.canvas.height - translatedPoints[0].y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            drawTriangle(ctx, originalPoints, 'gray');
+            drawTriangle(ctx, translatedPoints, 'blue', true);
+            
+            ui.outputs.translation.textContent = pointsToString(originalPoints, "Awal") + "\n" + pointsToString(translatedPoints, "Setelah Translasi");
+        }
+
+        function runRotationSimulation() {
+            const ctx = ui.contexts.rotation;
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            drawAxes(ctx);
+
+            const originalPoints = getTrianglePoints();
+            const angleDeg = parseFloat(ui.inputs.angle.value);
+            const angleRad = angleDeg * Math.PI / 180;
+            const px = parseFloat(ui.inputs.px.value);
+            const py = parseFloat(ui.inputs.py.value);
+            
+            ui.outputs.angle.textContent = `${angleDeg}°`;
+            ui.outputs.px.textContent = px;
+            ui.outputs.py.textContent = py;
+            
+            const rotatedPoints = originalPoints.map(p => {
+                const tx = p.x - px, ty = p.y - py;
+                const rotatedX = tx * Math.cos(angleRad) - ty * Math.sin(angleRad);
+                const rotatedY = tx * Math.sin(angleRad) + ty * Math.cos(angleRad);
+                return { x: rotatedX + px, y: rotatedY + py };
+            });
+
+            // Gambar titik pivot dan busur rotasi
+            const h = ctx.canvas.height;
+            ctx.fillStyle = 'red';
+            ctx.beginPath();
+            ctx.arc(px, h - py, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            const radius = Math.hypot(originalPoints[0].x - px, originalPoints[0].y - py);
+            const startAngle = Math.atan2(originalPoints[0].y - py, originalPoints[0].x - px);
+            ctx.beginPath();
+            ctx.setLineDash([2, 4]);
+            ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+            ctx.arc(px, h - py, radius, -startAngle, -(startAngle + angleRad), angleRad > 0);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            drawTriangle(ctx, originalPoints, 'gray');
+            drawTriangle(ctx, rotatedPoints, 'green', true);
+            
+            ui.outputs.rotation.textContent = pointsToString(originalPoints, "Awal") + "\n" + pointsToString(rotatedPoints, "Setelah Rotasi");
+        }
+        
+        // --- 4. EVENT LISTENERS DAN INISIALISASI ---
+        
+        function validateInput(inputElement) {
+            const value = parseFloat(inputElement.value);
+            const min = parseFloat(inputElement.min);
+            const max = parseFloat(inputElement.max);
+            if (isNaN(value)) {
+                inputElement.setCustomValidity('Wajib diisi angka.'); return false;
+            } else if (value < min || value > max) {
+                inputElement.setCustomValidity(`Nilai harus antara ${min} dan ${max}.`); return false;
+            } else {
+                inputElement.setCustomValidity(''); return true;
+            }
+        }
+        
+        function runAllSimulations() {
+            let allValid = true;
+            const inputsToValidate = [ui.inputs.ax, ui.inputs.ay, ui.inputs.bx, ui.inputs.by, ui.inputs.cx, ui.inputs.cy];
+            inputsToValidate.forEach(input => {
+                if (!validateInput(input)) {
+                    input.reportValidity();
+                    allValid = false;
+                }
+            });
+            if(allValid) {
+                runTranslationSimulation();
+                runRotationSimulation();
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            for(const key in ui.inputs) {
+                ui.inputs[key].addEventListener('input', runAllSimulations);
+            }
+            runAllSimulations(); // Initial draw
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Grafika Komputer: Pengantar Grafika 3 Dimensi</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f7f9fc; color: #333; line-height: 1.6; }
+        .container { max-width: 950px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 5px 25px rgba(0,0,0,0.15); }
+        h2, h3, h4 { color: #004085; text-align: center; margin-bottom: 25px; border-bottom: 2px solid #a8cde0; padding-bottom: 10px; }
+        .section { background: #fdfefe; padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #d0e6f8; }
+        .section h3, .section h4 { text-align: left; border-bottom: 1px solid #e0f0ff; padding-bottom: 8px; margin-bottom: 20px; }
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .input-group { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.9em; }
+        .input-group span { font-weight: bold; min-width: 20px; }
+        input[type="range"] { width: 100%; }
+        select { padding: 8px; border: 1px solid #cce0f0; border-radius: 5px; width: 100%; }
+        canvas { border: 2px solid #aaa; background-color: #fdfdfd; display: block; margin: 20px auto; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Grafika Komputer: Pengantar Grafika 3 Dimensi</h2>
+
+        <div class="section">
+            <h3>1. Konsep Grafika 3D</h3>
+            <p>Grafika komputer terbagi menjadi dua: 2D dan 3D.  Grafika 2D banyak dipakai untuk membuat grafik, peta, dan visualisasi lainnya, namun memiliki kekurangan yaitu ketidakmampuannya untuk merepresentasikan objek 3D secara utuh.  Kekurangan ini sangat terasa dalam bidang desain, di mana desainer perlu membuat visualisasi benda nyata yang berdimensi tiga.  Di sinilah grafika 3D berperan, karena kemampuannya untuk membuat visualisasi dari sebuah benda nyata yang dapat dilihat dari berbagai sudut pandang. </p>
+            
+            <h4>Simulasi Objek 3D</h4>
+            <p>Di bawah ini adalah simulasi interaktif dari sebuah objek kubus 3D. Anda dapat memutar objek, mengubah jenis proyeksi, dan mode penggambaran untuk memahami konsep-konsep dasar grafika 3D.</p>
+            <div class="controls-grid">
+                <div>
+                    <h5>Rotasi Objek</h5>
+                    <div class="input-group"><span>X:</span><input type="range" id="rotateX" min="0" max="360" value="30" step="1"><span id="valX"></span></div>
+                    <div class="input-group"><span>Y:</span><input type="range" id="rotateY" min="0" max="360" value="45" step="1"><span id="valY"></span></div>
+                    <div class="input-group"><span>Z:</span><input type="range" id="rotateZ" min="0" max="360" value="15" step="1"><span id="valZ"></span></div>
+                </div>
+                <div>
+                    <h5>Proyeksi & Render</h5>
+                    <label>Jenis Proyeksi:</label>
+                    <select id="projectionType">
+                        <option value="orthographic">Orthographic</option>
+                        <option value="perspective">Perspective</option>
+                    </select>
+                </div>
+                <div>
+                    <h5>Mode Render</h5>
+                     <label>Mode Penggambaran:</label>
+                    <select id="renderMode">
+                        <option value="vertices">Vertices (Titik)</option>
+                        <option value="wireframe">Wireframe</option>
+                        <option value="solid">Solid (Shaded)</option>
+                    </select>
+                </div>
+            </div>
+            <canvas id="3dCanvas" width="500" height="400"></canvas>
+        </div>
+
+        <div class="section">
+            <h3>2. Komponen dalam Grafika 3D</h3>
+            <h4>Primitif Geometri 3D</h4>
+            <ul>
+                <li><strong>Titik (Point):</strong> Sebuah posisi dalam ruang 3D yang direpresentasikan dengan koordinat (x, y, z).</li>
+                <li><strong>Garis (Line):</strong> Dibentuk dengan menghubungkan dua buah titik. </li>
+                <li><strong>Bidang/Permukaan (Plane/Surface):</strong> Geometri bidang datar yang penting dalam 3D, dispesifikasikan dengan persamaan $Ax + By + Cz + D = 0$. </li>
+            </ul>
+
+            <h4>Proses Rendering</h4>
+            <p>Rendering adalah proses akhir untuk menghasilkan sebuah citra 2D dari data 3D.  Proses ini menerjemahkan semua data yang sudah dimasukkan (seperti modeling, animasi, texturing, dan pencahayaan) ke dalam sebuah bentuk output akhir.  Secara umum, proses ini melibatkan 5 komponen utama: </p>
+            <ol>
+                <li><b>Geometri:</b> Bentuk dasar dari objek 3D.</li>
+                <li><b>Kamera:</b> Menentukan sudut pandang (point of view) kita terhadap objek.  Kamera ini bersifat virtual dan ditentukan oleh lokasi serta arah pandangnya. </li>
+                <li><b>Cahaya:</b> Objek penting yang memungkinkan dunia 3D terlihat dan dirender.  Jenisnya beragam, seperti Point Light, Spotlight, dan Ambient Light. </li>
+                <li><b>Karakteristik Permukaan:</b> Sifat dari permukaan objek yang memengaruhi interaksi dengan cahaya, meliputi warna, tekstur, dan sifat lain seperti kekasaran atau transparansi. </li>
+                <li><b>Algoritma Rendering:</b> Prosedur yang digunakan untuk menghitung citra 2D dari data 3D. </li>
+            </ol>
+
+            <h4>Algoritma Rendering (Konseptual)</h4>
+            <p>Ada beberapa metode dasar untuk me-render sebuah objek 3D:</p>
+            <ul>
+                <li><strong>Wireframe Rendering:</strong> Metode paling sederhana di mana objek hanya digambarkan sebagai garis-garis yang merepresentasikan tepiannya.  Metode ini sangat cepat, namun objek terlihat transparan dan dapat membingungkan mana sisi depan dan belakang. </li>
+                <li><strong>Hidden Line Rendering:</strong> Pengembangan dari wireframe di mana garis-garis yang seharusnya tidak terlihat karena terhalang oleh permukaan lain akan dihilangkan.  Metode ini lebih lambat dari wireframe, namun masih belum menampilkan karakteristik permukaan seperti warna atau tekstur. </li>
+                <li><strong>Shaded Rendering:</strong> Metode yang menghasilkan citra paling realistis. Komputer melakukan berbagai perhitungan kompleks terkait pencahayaan, bayangan, dan sifat permukaan.  Kelemahannya adalah waktu render yang jauh lebih lama.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. SETUP ---
+        const ui = {
+            canvas: document.getElementById('3dCanvas'),
+            ctx: document.getElementById('3dCanvas').getContext('2d'),
+            inputs: {
+                rotateX: document.getElementById('rotateX'),
+                rotateY: document.getElementById('rotateY'),
+                rotateZ: document.getElementById('rotateZ'),
+                projectionType: document.getElementById('projectionType'),
+                renderMode: document.getElementById('renderMode'),
+            },
+            outputs: {
+                valX: document.getElementById('valX'),
+                valY: document.getElementById('valY'),
+                valZ: document.getElementById('valZ'),
+            }
+        };
+
+        const cubeVertices = [
+            {x:-50, y:-50, z:-50}, {x:50, y:-50, z:-50}, {x:50, y:50, z:-50}, {x:-50, y:50, z:-50},
+            {x:-50, y:-50, z:50}, {x:50, y:-50, z:50}, {x:50, y:50, z:50}, {x:-50, y:50, z:50}
+        ];
+        const cubeEdges = [
+            [0,1],[1,2],[2,3],[3,0], [4,5],[5,6],[6,7],[7,4], [0,4],[1,5],[2,6],[3,7]
+        ];
+        const cubeFaces = [
+            [0,1,2,3], [1,5,6,2], [5,4,7,6], [4,0,3,7], [3,2,6,7], [4,5,1,0]
+        ];
+        const faceColors = ['rgba(255,0,0,0.7)', 'rgba(0,255,0,0.7)', 'rgba(0,0,255,0.7)', 'rgba(255,255,0,0.7)', 'rgba(255,0,255,0.7)', 'rgba(0,255,255,0.7)'];
+
+        // --- 2. LOGIKA MATEMATIKA & TRANSFORMASI ---
+        function rotate(p, angles) {
+            const radX = angles.x, radY = angles.y, radZ = angles.z;
+            let {x, y, z} = p;
+
+            // Y-axis rotation
+            let dx = x, dz = z;
+            x = dx * Math.cos(radY) - dz * Math.sin(radY);
+            z = dx * Math.sin(radY) + dz * Math.cos(radY);
+            
+            // X-axis rotation
+            let dy = y;
+            dz = z;
+            y = dy * Math.cos(radX) - dz * Math.sin(radX);
+            z = dy * Math.sin(radX) + dz * Math.cos(radX);
+
+            // Z-axis rotation
+            dx = x;
+            dy = y;
+            x = dx * Math.cos(radZ) - dy * Math.sin(radZ);
+            y = dx * Math.sin(radZ) + dy * Math.cos(radZ);
+
+            return { x, y, z };
+        }
+
+        function project(p, type) {
+            if (type === 'orthographic') {
+                return { x: p.x, y: p.y };
+            }
+            // Perspective
+            const distance = 250;
+            const scale = distance / (distance + p.z);
+            return { x: p.x * scale, y: p.y * scale };
+        }
+
+        // --- 3. FUNGSI GAMBAR UTAMA ---
+        function draw3DScene() {
+            const { ctx, canvas, inputs, outputs } = ui;
+            const { width: w, height: h } = canvas;
+            const centerX = w / 2, centerY = h / 2;
+
+            ctx.clearRect(0, 0, w, h);
+            ctx.fillStyle = '#fdfdfd';
+            ctx.fillRect(0, 0, w, h);
+
+            // Baca nilai dari semua kontrol
+            const angles = {
+                x: inputs.rotateX.value * Math.PI / 180,
+                y: inputs.rotateY.value * Math.PI / 180,
+                z: inputs.rotateZ.value * Math.PI / 180,
+            };
+            const projectionType = inputs.projectionType.value;
+            const renderMode = inputs.renderMode.value;
+
+            // Update label slider
+            outputs.valX.textContent = `${inputs.rotateX.value}°`;
+            outputs.valY.textContent = `${inputs.rotateY.value}°`;
+            outputs.valZ.textContent = `${inputs.rotateZ.value}°`;
+            
+            // Transformasi dan Proyeksi
+            const transformedVertices = cubeVertices.map(v => rotate(v, angles));
+            const projectedVertices = transformedVertices.map(v => project(v, projectionType));
+            
+            // Gambar berdasarkan mode render
+            if (renderMode === 'vertices') {
+                projectedVertices.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(p.x + centerX, -p.y + centerY, 4, 0, 2 * Math.PI);
+                    ctx.fillStyle = 'black';
+                    ctx.fill();
+                });
+            } else if (renderMode === 'wireframe') {
+                ctx.beginPath();
+                cubeEdges.forEach(edge => {
+                    const p1 = projectedVertices[edge[0]];
+                    const p2 = projectedVertices[edge[1]];
+                    ctx.moveTo(p1.x + centerX, -p1.y + centerY);
+                    ctx.lineTo(p2.x + centerX, -p2.y + centerY);
+                });
+                ctx.strokeStyle = 'blue';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            } else if (renderMode === 'solid') {
+                const facesWithDepth = cubeFaces.map((face, index) => {
+                    let avgZ = 0;
+                    face.forEach(vertexIndex => avgZ += transformedVertices[vertexIndex].z);
+                    return { index, avgZ: avgZ / face.length };
+                });
+
+                facesWithDepth.sort((a, b) => b.avgZ - a.avgZ); // Painter's Algorithm: sort back to front
+
+                facesWithDepth.forEach(faceInfo => {
+                    const face = cubeFaces[faceInfo.index];
+                    ctx.beginPath();
+                    const startPoint = projectedVertices[face[0]];
+                    ctx.moveTo(startPoint.x + centerX, -startPoint.y + centerY);
+                    for (let i = 1; i < face.length; i++) {
+                        const point = projectedVertices[face[i]];
+                        ctx.lineTo(point.x + centerX, -point.y + centerY);
+                    }
+                    ctx.closePath();
+                    ctx.fillStyle = faceColors[faceInfo.index];
+                    ctx.strokeStyle = '#333';
+                    ctx.lineWidth = 1;
+                    ctx.fill();
+                    ctx.stroke();
+                });
+            }
+        }
+
+        // --- 4. EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            for (const key in ui.inputs) {
+                ui.inputs[key].addEventListener('input', draw3DScene);
+            }
+            draw3DScene(); // Initial draw
+        });
+    </script>
+</body>
+</html>

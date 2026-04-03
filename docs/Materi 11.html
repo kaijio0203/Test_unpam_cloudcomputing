@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Grafika Komputer: Antialiasing</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f7f9fc; color: #333; line-height: 1.6; }
+        .container { max-width: 950px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 5px 25px rgba(0,0,0,0.15); }
+        h2, h3 { color: #004085; text-align: center; margin-bottom: 25px; border-bottom: 2px solid #a8cde0; padding-bottom: 10px; }
+        .section { background: #fdfefe; padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #d0e6f8; }
+        .section h3 { color: #0056b3; text-align: left; border-bottom: 1px solid #e0f0ff; padding-bottom: 8px; margin-bottom: 20px; }
+        .input-group { display: flex; align-items: center; gap: 15px; margin-bottom: 8px; flex-wrap: wrap; }
+        .input-group label { display: flex; align-items: center; gap: 5px; }
+        input[type="range"] { width: 150px; }
+        select { padding: 8px; border: 1px solid #cce0f0; border-radius: 5px; }
+        canvas { border: 2px solid #aaa; background-color: #fdfdfd; display: block; margin: 10px auto; border-radius: 8px; image-rendering: pixelated; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges; }
+        .canvas-container { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px; margin-top: 20px; }
+        .canvas-box { text-align: center; background-color: #fdfdfd; border: 1px solid #ddd; border-radius: 8px; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); flex: 1; min-width: 400px; }
+        .output-box { background: #e9f0f7; border: 1px solid #cce0f0; padding: 15px; border-radius: 8px; margin-top: 15px; font-family: monospace; white-space: pre-wrap; word-wrap: break-word; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Grafika Komputer: Antialiasing</h2>
+
+        <div class="section">
+            <h3>1. Pengertian Antialiasing dan Efek Aliasing</h3>
+            <p>
+                Ada perbedaan mendasar antara representasi gambar berbasis piksel dan vektor. Piksel adalah susunan cahaya, pigmen, atau warna , sedangkan vektor adalah representasi matematis dari sebuah bentuk atau garis. Karena vektor bersifat matematis, ia memiliki posisi absolut dan tidak memiliki ketebalan atau area yang kabur.
+            </p>
+            <p>
+                Ketika garis atau bentuk vektor yang ideal tersebut direpresentasikan pada tampilan berbasis piksel, terutama pada resolusi rendah atau saat diperbesar, tepiannya bisa terlihat bergerigi atau patah-patah. Efek visual yang tidak diinginkan ini dikenal sebagai <strong>aliasing</strong>.
+            </p>
+            <p>
+                <strong>Antialiasing</strong> adalah teknik untuk mengurangi efek *jagged* (tepi bergerigi) tersebut. Teknik ini bekerja sebagai filter yang mengubah warna piksel di sekitar tepi objek untuk menciptakan transisi yang lebih halus, sehingga gambar terlihat lebih baik.
+            </p>
+
+            <div class="input-group">
+                <label>Bentuk Objek: 
+                    <select id="shapeType">
+                        <option value="line">Garis Diagonal</option>
+                        <option value="circle">Lingkaran</option>
+                        <option value="text">Teks "A"</option>
+                        <option value="star">Bintang</option>
+                    </select>
+                </label>
+                <label>Simulasi Zoom: <input type="range" id="pixelSize" min="1" max="20" value="8"><span id="pixelSizeValue"></span></label>
+                <label><input type="checkbox" id="showGrid"> Tampilkan Grid Piksel</label>
+            </div>
+            <div class="canvas-container">
+                <div class="canvas-box">
+                    <h4>Aliased (Bergerigi)</h4>
+                    <canvas id="aliasedCanvas" width="400" height="400"></canvas>
+                </div>
+                <div class="canvas-box">
+                    <h4>Anti-aliased (Halus)</h4>
+                    <canvas id="antialiasedCanvas" width="400" height="400"></canvas>
+                </div>
+            </div>
+            <div class="output-box" id="aliasingOutput"></div>
+        </div>
+
+        <div class="section">
+            <h3>2. Jenis-jenis Antialiasing</h3>
+            <p>
+                Berbagai algoritma antialiasing telah dikembangkan, masing-masing dengan kelebihan dan kekurangan antara kualitas visual dan performa. Beberapa jenis yang umum dijumpai dalam aplikasi grafis seperti video game adalah:
+            </p>
+            <ul>
+                <li><strong>FXAA (Fast Approximate Anti-aliasing):</strong> Teknik ini memproses bingkai gambar secara keseluruhan untuk mengurangi aliasing dengan cepat. Namun, kelemahannya adalah dapat membuat gambar terlihat sedikit kabur atau buram. </li>
+                <li><strong>MSAA (Multisampling Anti-aliasing):</strong> Lebih cerdas dari FXAA, teknik ini hanya diterapkan pada bagian tepi objek yang terdeteksi bergerigi, bukan pada seluruh bingkai. </li>
+                <li><strong>TXAA (Temporal Anti-aliasing):</strong> Mirip dengan MSAA, TXAA menggunakan sampel dari beberapa bingkai (temporal) untuk menyempurnakan tepian objek agar terlihat sangat halus. Kelemahannya, sama seperti FXAA, teknik ini bisa membuat gambar terasa lebih kabur. </li>
+            </ul>
+            <p>
+                Penggunaan antialiasing sangat penting untuk mencapai grafis yang halus, terutama pada monitor beresolusi tinggi.  Akan tetapi, proses ini sangat membebani perangkat keras (GPU).  Pada perangkat mobile yang memiliki keterbatasan pendingin, mengaktifkan antialiasing dapat menyebabkan panas berlebih dan penurunan performa (*thermal throttling*), sehingga seringkali direkomendasikan untuk dimatikan. 
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. SETUP UI DAN INISIALISASI ---
+        const ui = {
+            canvases: {},
+            inputs: {},
+            outputs: {}
+        };
+
+        function setupUI() {
+            ui.canvases.aliased = document.getElementById('aliasedCanvas').getContext('2d');
+            ui.canvases.antialiased = document.getElementById('antialiasedCanvas').getContext('2d');
+            ui.inputs.shapeType = document.getElementById('shapeType');
+            ui.inputs.pixelSize = document.getElementById('pixelSize');
+            ui.inputs.showGrid = document.getElementById('showGrid');
+            ui.outputs.pixelSizeValue = document.getElementById('pixelSizeValue');
+            ui.outputs.main = document.getElementById('aliasingOutput');
+        }
+
+        // --- 2. FUNGSI-FUNGSI MENGGAMBAR BENTUK ---
+        function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius, color) {
+            let rot = Math.PI / 2 * 3;
+            let x, y;
+            const step = Math.PI / spikes;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - outerRadius);
+            for (let i = 0; i < spikes; i++) {
+                x = cx + Math.cos(rot) * outerRadius; y = cy + Math.sin(rot) * outerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+                x = cx + Math.cos(rot) * innerRadius; y = cy + Math.sin(rot) * innerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+            }
+            ctx.lineTo(cx, cy - outerRadius);
+            ctx.closePath();
+            ctx.strokeStyle = color;
+            ctx.stroke();
+        }
+        
+        function drawShapeOnContext(ctx, shape, color, w, h) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = ctx.canvas.width / 100; // Ketebalan garis responsif
+             if (shape === 'line') {
+                ctx.beginPath(); ctx.moveTo(w * 0.1, h * 0.1); ctx.lineTo(w * 0.9, h * 0.9); ctx.stroke();
+            } else if (shape === 'circle') {
+                ctx.beginPath(); ctx.arc(w / 2, h / 2, w * 0.4, 0, 2 * Math.PI); ctx.stroke();
+            } else if (shape === 'text') {
+                ctx.font = `bold ${Math.round(w * 0.8)}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.strokeText('A', w / 2, h / 2 + (w*0.05)); // Sedikit penyesuaian posisi
+            } else if (shape === 'star') {
+                drawStar(ctx, w / 2, h / 2, 5, w * 0.45, w * 0.2, color);
+            }
+        }
+
+        // --- 3. FUNGSI UTAMA UNTUK MENGGAMBAR SIMULASI ---
+        function drawScene() {
+            const aliasedCtx = ui.canvases.aliased;
+            const antialiasedCtx = ui.canvases.antialiased;
+            const { width: w, height: h } = aliasedCtx.canvas;
+            
+            const pixelScale = parseInt(ui.inputs.pixelSize.value);
+            const shapeType = ui.inputs.shapeType.value;
+            const showGrid = ui.inputs.showGrid.checked;
+            
+            ui.outputs.pixelSizeValue.textContent = `${pixelScale}x`;
+            ui.outputs.main.textContent = `Ukuran Piksel (Simulasi Zoom): ${pixelScale}x. Semakin besar nilai, semakin jelas efek bergerigi (aliasing) pada gambar kiri.`;
+
+            // --- Gambar Versi Anti-Aliased (Halus) ---
+            antialiasedCtx.clearRect(0, 0, w, h);
+            antialiasedCtx.imageSmoothingEnabled = true;
+            antialiasedCtx.filter = `blur(${pixelScale > 8 ? 0.4 : 0}px)`; // Beri sedikit blur saat zoom sangat tinggi
+            drawShapeOnContext(antialiasedCtx, shapeType, 'navy', w, h);
+            antialiasedCtx.filter = 'none';
+
+            // --- Gambar Versi Aliased (Bergerigi) ---
+            aliasedCtx.clearRect(0, 0, w, h);
+            aliasedCtx.imageSmoothingEnabled = false;
+
+            const tempCanvas = document.createElement('canvas');
+            const tempW = w / pixelScale;
+            const tempH = h / pixelScale;
+            tempCanvas.width = tempW;
+            tempCanvas.height = tempH;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.imageSmoothingEnabled = false;
+            
+            drawShapeOnContext(tempCtx, shapeType, 'navy', tempW, tempH);
+            
+            aliasedCtx.drawImage(tempCanvas, 0, 0, w, h);
+            
+            if (showGrid) {
+                aliasedCtx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
+                aliasedCtx.lineWidth = 1;
+                for (let i = 0; i < w; i += pixelScale) {
+                    aliasedCtx.beginPath(); aliasedCtx.moveTo(i, 0); aliasedCtx.lineTo(i, h); aliasedCtx.stroke();
+                }
+                for (let i = 0; i < h; i += pixelScale) {
+                    aliasedCtx.beginPath(); aliasedCtx.moveTo(0, i); aliasedCtx.lineTo(w, i); aliasedCtx.stroke();
+                }
+            }
+        }
+
+        // --- 4. EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setupUI();
+            for (const key in ui.inputs) {
+                ui.inputs[key].addEventListener('input', drawScene);
+            }
+            drawScene();
+        });
+    </script>
+</body>
+</html>

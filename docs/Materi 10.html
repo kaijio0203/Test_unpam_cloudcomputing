@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Grafika Komputer: Viewing & Clipping</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f7f9fc; color: #333; line-height: 1.6; }
+        .container { max-width: 1100px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 5px 25px rgba(0,0,0,0.15); }
+        h2, h3 { color: #004085; text-align: center; margin-bottom: 25px; border-bottom: 2px solid #a8cde0; padding-bottom: 10px; }
+        .section { background: #fdfefe; padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #d0e6f8; }
+        .section h3 { color: #0056b3; text-align: left; border-bottom: 1px solid #e0f0ff; padding-bottom: 8px; margin-bottom: 20px; }
+        .input-group { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.9em; }
+        .input-group span { font-weight: bold; min-width: 40px; }
+        input[type="range"] { width: 100%; }
+        canvas { border: 2px solid #aaa; background-color: #fff; display: block; margin: 10px auto; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        .output-box { background: #e9f0f7; border: 1px solid #cce0f0; padding: 15px; border-radius: 8px; margin-top: 15px; font-family: monospace; white-space: pre-wrap; word-wrap: break-word; font-size: 0.9em; }
+        .main-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .control-box { border: 1px dashed #e0f0ff; padding: 15px; border-radius: 8px; }
+        h4 { margin-top: 0; color: #004085; }
+        pre { background-color: #f0f4f7; padding: 15px; border-radius: 8px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 0.85em; color: #555; border: 1px solid #dee9f2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Grafika Komputer: Viewing dan Clipping</h2>
+
+        <div class="section">
+            <h3>1. Windowing (Jendela Pandang) & Viewport</h3>
+            <p>Proses mengubah deskripsi objek dari koordinat dunia (world coordinates) menjadi koordinat layar (device coordinates) disebut <strong>transformasi viewing</strong>. Area pada koordinat dunia yang ingin kita tampilkan disebut <strong>Window</strong>. Area pada layar tempat window akan ditampilkan disebut <strong>Viewport</strong>.</p>
+            <p>Transformasi ini memetakan posisi $(x_w, y_w)$ di dalam window ke posisi $(x_v, y_v)$ di dalam viewport. Hubungan proporsionalnya adalah sebagai berikut:</p>
+            <pre>
+$\frac{x_v - xv_{min}}{xv_{max} - xv_{min}} = \frac{x_w - xw_{min}}{xw_{max} - xw_{min}}$  ,  $\frac{y_v - yv_{min}}{yv_{max} - yv_{min}} = \frac{y_w - yw_{min}}{yw_{max} - yw_{min}}$
+            </pre>
+            <div class="main-grid">
+                <div class="control-box">
+                    <h4>Kontrol Objek (Segitiga)</h4>
+                    <div class="input-group"><span>A:</span>X<input type="range" id="v_ax" min="-200" max="200" value="20"><span id="v_ax_val"></span> Y<input type="range" id="v_ay" min="-150" max="150" value="20"><span id="v_ay_val"></span></div>
+                    <div class="input-group"><span>B:</span>X<input type="range" id="v_bx" min="-200" max="200" value="100"><span id="v_bx_val"></span> Y<input type="range" id="v_by" min="-150" max="150" value="50"><span id="v_by_val"></span></div>
+                    <div class="input-group"><span>C:</span>X<input type="range" id="v_cx" min="-200" max="200" value="50"><span id="v_cx_val"></span> Y<input type="range" id="v_cy" min="-150" max="150" value="120"><span id="v_cy_val"></span></div>
+                </div>
+                <div class="control-box">
+                    <h4>Kontrol Window & Viewport</h4>
+                    <div class="input-group"><span>Win X:</span><input type="range" id="xw_min" min="-200" max="200" value="-150"><input type="range" id="xw_max" min="-200" max="200" value="150"></div>
+                    <div class="input-group"><span>Win Y:</span><input type="range" id="yw_min" min="-150" max="150" value="-100"><input type="range" id="yw_max" min="-150" max="150" value="125"></div>
+                    <hr>
+                    <div class="input-group"><span>View X:</span><input type="range" id="xv_min" min="0" max="400" value="50"><input type="range" id="xv_max" min="0" max="400" value="350"></div>
+                    <div class="input-group"><span>View Y:</span><input type="range" id="yv_min" min="0" max="300" value="50"><input type="range" id="yv_max" min="0" max="300" value="250"></div>
+                </div>
+            </div>
+             <div class="main-grid">
+                <div class="control-box" style="text-align:center;"><h4>Window (World Space)</h4><canvas id="windowCanvas" width="400" height="300"></canvas></div>
+                <div class="control-box" style="text-align:center;"><h4>Viewport (Screen Space)</h4><canvas id="viewportCanvas" width="400" height="300"></canvas></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>2. Clipping (Pemotongan) Garis</h3>
+            <p>Setelah window ditentukan, objek atau bagian objek yang berada di luarnya perlu dibuang. Proses ini disebut <strong>clipping</strong>. Algoritma Cohen-Sutherland adalah metode populer untuk clipping garis.</p>
+            <p>Setiap titik akhir garis diberi "outcode" 4-bit (Top, Bottom, Right, Left - TBRL) yang mengidentifikasi posisinya relatif terhadap window.</p>
+            <h4>Kondisi Garis terhadap Clipping Window:</h4>
+            <ul>
+                <li><b>Invisible:</b> Garis tidak terlihat, seluruhnya berada di luar clipping window (Trivial Reject).</li>
+                <li><b>Visible:</b> Garis terlihat, seluruhnya berada di dalam clipping window (Trivial Accept).</li>
+                <li><b>Half Partial:</b> Garis terpotong sebagian, satu titik di dalam dan satu di luar.</li>
+                <li><b>Full Partial:</b> Garis terpotong penuh, kedua titik di luar tetapi garis melintasi window.</li>
+            </ul>
+             <div class="main-grid">
+                <div class="control-box">
+                    <h4>Kontrol Garis (P1 ke P2)</h4>
+                    <div class="input-group"><span>X1:</span><input type="range" id="c_x1" min="-250" max="250" value="-150"><span id="c_x1_val"></span></div>
+                    <div class="input-group"><span>Y1:</span><input type="range" id="c_y1" min="-200" max="200" value="-120"><span id="c_y1_val"></span></div>
+                    <div class="input-group"><span>X2:</span><input type="range" id="c_x2" min="-250" max="250" value="180"><span id="c_x2_val"></span></div>
+                    <div class="input-group"><span>Y2:</span><input type="range" id="c_y2" min="-200" max="200" value="150"><span id="c_y2_val"></span></div>
+                </div>
+                 <div class="control-box">
+                    <h4>Kontrol Jendela Clipping</h4>
+                    <div class="input-group"><span>Xmin:</span><input type="range" id="c_xmin" min="-200" max="0" value="-100"><span id="c_xmin_val"></span></div>
+                    <div class="input-group"><span>Ymin:</span><input type="range" id="c_ymin" min="-150" max="0" value="-80"><span id="c_ymin_val"></span></div>
+                    <div class="input-group"><span>Xmax:</span><input type="range" id="c_xmax" min="0" max="200" value="100"><span id="c_xmax_val"></span></div>
+                    <div class="input-group"><span>Ymax:</span><input type="range" id="c_ymax" min="0" max="150" value="80"><span id="c_ymax_val"></span></div>
+                </div>
+            </div>
+            <canvas id="clippingCanvas" width="500" height="400"></canvas>
+            <div class="output-box" id="clippingOutput"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. SETUP DAN INISIALISASI ---
+        const ui = { inputs: {}, contexts: {}, outputs: {} };
+        const allElementIds = ["v_ax", "v_ay", "v_bx", "v_by", "v_cx", "v_cy", "xw_min", "xw_max", "yw_min", "yw_max", "xv_min", "xv_max", "yv_min", "yv_max", "c_x1", "c_y1", "c_x2", "c_y2", "c_xmin", "c_ymin", "c_xmax", "c_ymax"];
+        allElementIds.forEach(id => {
+            if (document.getElementById(id)) ui.inputs[id] = document.getElementById(id);
+            if (document.getElementById(`${id}_val`)) ui.outputs[`${id}_val`] = document.getElementById(`${id}_val`);
+        });
+        ui.contexts = {
+            view_window: document.getElementById('windowCanvas').getContext('2d'),
+            view_viewport: document.getElementById('viewportCanvas').getContext('2d'),
+            clipping: document.getElementById('clippingCanvas').getContext('2d')
+        };
+        ui.outputs.clipping = document.getElementById('clippingOutput');
+
+        // --- 2. FUNGSI HELPER UMUM ---
+        function toScreen(ctx, p, originIsCenter = true) {
+            if (originIsCenter) {
+                const { width: w, height: h } = ctx.canvas;
+                return { x: p.x + w / 2, y: -p.y + h / 2 };
+            }
+            return p;
+        }
+
+        // --- 3. LOGIKA DAN FUNGSI GAMBAR UNTUK SETIAP SIMULASI ---
+
+        // ================== VIEWING SIMULATION ==================
+        function runViewingSimulation() {
+            const winCtx = ui.contexts.view_window;
+            const viewCtx = ui.contexts.view_viewport;
+            winCtx.clearRect(0, 0, winCtx.canvas.width, winCtx.canvas.height);
+            viewCtx.clearRect(0, 0, viewCtx.canvas.width, viewCtx.canvas.height);
+            
+            const triangle = [
+                {x: parseFloat(ui.inputs.v_ax.value), y: parseFloat(ui.inputs.v_ay.value)},
+                {x: parseFloat(ui.inputs.v_bx.value), y: parseFloat(ui.inputs.v_by.value)},
+                {x: parseFloat(ui.inputs.v_cx.value), y: parseFloat(ui.inputs.v_cy.value)},
+            ];
+            const w = {
+                xmin: parseFloat(ui.inputs.xw_min.value), xmax: parseFloat(ui.inputs.xw_max.value),
+                ymin: parseFloat(ui.inputs.yw_min.value), ymax: parseFloat(ui.inputs.yw_max.value),
+            };
+            const v = {
+                xmin: parseFloat(ui.inputs.xv_min.value), xmax: parseFloat(ui.inputs.xv_max.value),
+                ymin: parseFloat(ui.inputs.yv_min.value), ymax: parseFloat(ui.inputs.yv_max.value),
+            };
+
+            for (const key of ['v_ax', 'v_ay', 'v_bx', 'v_by', 'v_cx', 'v_cy']) {
+                 ui.outputs[`${key}_val`].textContent = ui.inputs[key].value;
+            }
+
+            const ws1 = toScreen(winCtx, {x:w.xmin, y:w.ymax});
+            const ws2 = toScreen(winCtx, {x:w.xmax, y:w.ymin});
+            winCtx.strokeStyle = "blue"; winCtx.strokeRect(ws1.x, ws1.y, ws2.x - ws1.x, ws2.y - ws1.y);
+            winCtx.beginPath();
+            const t_p1 = toScreen(winCtx, triangle[0]);
+            winCtx.moveTo(t_p1.x, t_p1.y);
+            triangle.forEach(p => winCtx.lineTo(toScreen(winCtx, p).x, toScreen(winCtx, p).y));
+            winCtx.closePath();
+            winCtx.fillStyle = "rgba(0,0,255,0.3)"; winCtx.fill();
+
+            viewCtx.strokeStyle = "green"; viewCtx.strokeRect(v.xmin, v.ymin, v.xmax - v.xmin, v.ymax - v.ymin);
+            const sx = (v.xmax - v.xmin) / (w.xmax - w.xmin);
+            const sy = (v.ymax - v.ymin) / (w.ymax - w.ymin);
+            const mappedTriangle = triangle.map(p => ({
+                x: v.xmin + (p.x - w.xmin) * sx,
+                y: v.ymin + (p.y - w.ymin) * sy
+            }));
+            viewCtx.beginPath(); viewCtx.moveTo(mappedTriangle[0].x, mappedTriangle[0].y);
+            mappedTriangle.forEach(p => viewCtx.lineTo(p.x, p.y));
+            viewCtx.closePath();
+            viewCtx.fillStyle = "rgba(0,255,0,0.3)"; viewCtx.fill();
+        }
+
+        // ================== CLIPPING SIMULATION ==================
+        const INSIDE=0, LEFT=1, RIGHT=2, BOTTOM=4, TOP=8;
+        
+        function computeOutCode(x, y, win) {
+            let code = INSIDE;
+            if (x < win.xmin) code |= LEFT; else if (x > win.xmax) code |= RIGHT;
+            if (y < win.ymin) code |= BOTTOM; else if (y > win.ymax) code |= TOP;
+            return code;
+        }
+
+        function cohenSutherlandClip(p1_in, p2_in, win) {
+            let p1 = {...p1_in}, p2 = {...p2_in};
+            const code1_initial = computeOutCode(p1.x, p1.y, win);
+            const code2_initial = computeOutCode(p2.x, p2.y, win);
+            let code1 = code1_initial, code2 = code2_initial;
+            let accept = false;
+
+            while (true) {
+                if (!(code1 | code2)) { accept = true; break; } 
+                else if (code1 & code2) { break; } 
+                else {
+                    let x, y;
+                    const outcodeOut = code1 || code2;
+                    if (outcodeOut & TOP) { x = p1.x + (p2.x - p1.x) * (win.ymax - p1.y) / (p2.y - p1.y); y = win.ymax; } 
+                    else if (outcodeOut & BOTTOM) { x = p1.x + (p2.x - p1.x) * (win.ymin - p1.y) / (p2.y - p1.y); y = win.ymin; } 
+                    else if (outcodeOut & RIGHT) { y = p1.y + (p2.y - p1.y) * (win.xmax - p1.x) / (p2.x - p1.x); x = win.xmax; } 
+                    else if (outcodeOut & LEFT) { y = p1.y + (p2.y - p1.y) * (win.xmin - p1.x) / (p2.x - p1.x); x = win.xmin; }
+                    
+                    if (outcodeOut === code1) { p1.x = x; p1.y = y; code1 = computeOutCode(p1.x, p1.y, win); } 
+                    else { p2.x = x; p2.y = y; code2 = computeOutCode(p2.x, p2.y, win); }
+                }
+            }
+            
+            let status = 'Invisible';
+            if (accept) {
+                if (code1_initial === 0 && code2_initial === 0) status = 'Visible';
+                else if (code1_initial !== 0 && code2_initial !== 0) status = 'Full Partial';
+                else status = 'Half Partial';
+            }
+            return { status, p1, p2 };
+        }
+
+        function runClippingSimulation() {
+            const ctx = ui.contexts.clipping;
+            const { width: w, height: h } = ctx.canvas;
+            ctx.clearRect(0, 0, w, h);
+
+            const line = { p1: { x: parseFloat(ui.inputs.c_x1.value), y: parseFloat(ui.inputs.c_y1.value) }, p2: { x: parseFloat(ui.inputs.c_x2.value), y: parseFloat(ui.inputs.c_y2.value) } };
+            const clipWindow = { xmin: parseFloat(ui.inputs.c_xmin.value), ymin: parseFloat(ui.inputs.c_ymin.value), xmax: parseFloat(ui.inputs.c_xmax.value), ymax: parseFloat(ui.inputs.c_ymax.value) };
+
+            for (const key of ['c_x1','c_y1','c_x2','c_y2','c_xmin','c_ymin','c_xmax','c_ymax']) {
+                ui.outputs[`${key}_val`].textContent = ui.inputs[key].value;
+            }
+
+            const regionColors = {[TOP]:'rgba(255,165,0,0.08)', [BOTTOM]:'rgba(255,165,0,0.08)',[LEFT]:'rgba(0,128,0,0.08)', [RIGHT]:'rgba(0,128,0,0.08)',[TOP|LEFT]: 'rgba(128,0,128,0.08)', [TOP|RIGHT]: 'rgba(128,0,128,0.08)',[BOTTOM|LEFT]:'rgba(128,0,128,0.08)', [BOTTOM|RIGHT]:'rgba(128,0,128,0.08)'};
+            function drawClippingRegions(ctx,clipWindow){const{width:w,height:h}=ctx.canvas;for(const code in regionColors){ctx.fillStyle=regionColors[code];let x=0,y=0,cw=w,ch=h;const win_s={xmin:toScreen(ctx,{x:clipWindow.xmin,y:0}).x,xmax:toScreen(ctx,{x:clipWindow.xmax,y:0}).x,ymin:toScreen(ctx,{x:0,y:clipWindow.ymin}).y,ymax:toScreen(ctx,{x:0,y:clipWindow.ymax}).y};if(code&LEFT){cw=win_s.xmin}if(code&RIGHT){x=win_s.xmax,cw=w-x}if(code&BOTTOM){y=win_s.ymin,ch=h-y}if(code&TOP){ch=win_s.ymax}if((code&(LEFT|RIGHT))===0){x=win_s.xmin,cw=win_s.xmax-win_s.xmin}if((code&(TOP|BOTTOM))===0){y=win_s.ymax,ch=win_s.ymin-win_s.ymax}ctx.fillRect(x,y,cw,ch)}}
+            drawClippingRegions(ctx, clipWindow);
+            
+            const winScreen = { p1: toScreen(ctx, {x: clipWindow.xmin, y: clipWindow.ymax}), p2: toScreen(ctx, {x: clipWindow.xmax, y: clipWindow.ymin}) };
+            ctx.strokeStyle = 'black'; ctx.lineWidth = 2;
+            ctx.strokeRect(winScreen.p1.x, winScreen.p1.y, winScreen.p2.x - winScreen.p1.x, winScreen.p2.y - winScreen.p1.y);
+
+            const result = cohenSutherlandClip(line.p1, line.p2, clipWindow);
+            
+            const l_p1_s = toScreen(ctx, line.p1), l_p2_s = toScreen(ctx, line.p2);
+            ctx.beginPath(); ctx.moveTo(l_p1_s.x, l_p1_s.y); ctx.lineTo(l_p2_s.x, l_p2_s.y);
+            ctx.strokeStyle = '#cccccc'; ctx.lineWidth = 2; ctx.stroke();
+            
+            const r_p1_s = toScreen(ctx, result.p1), r_p2_s = toScreen(ctx, result.p2);
+            ctx.beginPath(); ctx.moveTo(r_p1_s.x, r_p1_s.y); ctx.lineTo(r_p2_s.x, r_p2_s.y);
+            ctx.strokeStyle = '#ff0000'; ctx.lineWidth = 2; ctx.stroke();
+
+            let statusText = '', coordinatesText = '';
+            if (result.status !== 'Invisible') {
+                ctx.beginPath(); ctx.moveTo(r_p1_s.x, r_p1_s.y); ctx.lineTo(r_p2_s.x, r_p2_s.y);
+                ctx.strokeStyle = '#00dd00'; ctx.lineWidth = 4; ctx.stroke();
+            }
+
+            switch (result.status) {
+                case 'Visible': statusText = "STATUS: Visible (Sepenuhnya di dalam)"; break;
+                case 'Invisible': statusText = "STATUS: Invisible (Sepenuhnya di luar)"; break;
+                case 'Half Partial': statusText = "STATUS: Half Partial (Terpotong Sebagian)"; coordinatesText = `Koordinat Baru:\nP1': (${result.p1.x.toFixed(1)}, ${result.p1.y.toFixed(1)})  P2': (${result.p2.x.toFixed(1)}, ${result.p2.y.toFixed(1)})`; break;
+                case 'Full Partial': statusText = "STATUS: Full Partial (Terpotong Penuh)"; coordinatesText = `Koordinat Baru:\nP1': (${result.p1.x.toFixed(1)}, ${result.p1.y.toFixed(1)})  P2': (${result.p2.x.toFixed(1)}, ${result.p2.y.toFixed(1)})`; break;
+            }
+            ui.outputs.clipping.textContent = statusText + (coordinatesText ? `\n${coordinatesText}` : '');
+        }
+        
+        // --- 4. EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            for (const key in ui.inputs) {
+                ui.inputs[key].addEventListener('input', () => {
+                    if (key.startsWith('v_') || key.startsWith('x') || key.startsWith('y')) runViewingSimulation();
+                    if (key.startsWith('c_')) runClippingSimulation();
+                });
+            }
+            runViewingSimulation();
+            runClippingSimulation();
+        });
+    </script>
+</body>
+</html>
