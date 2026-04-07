@@ -9,9 +9,9 @@ Selamat datang di GitHub saya! Saya adalah seorang praktisi IT dengan pengalaman
 ### 👨‍💻 Tentang Saya
 
 - 🎓 **Pendidikan:** Mahasiswa S1 Teknik Informatika di Universitas Pamulang (UNPAM).
-- 💼 **Pengalaman:** ~5 Tahun di bidang IT Staff (Troubleshooting, Hardware/Software, System Administration).
-- 🌱 **Fokus Belajar Saat Ini:** Cloud Computing, Web Development dasar, dan Computer Networking (Cisco/Linux Server), Cyber Security.
-- 🎯 **Tujuan:** Menggabungkan pengalaman praktis IT Support dengan ilmu rekayasa perangkat lunak dan infrastruktur modern (Cloud/DevOps).
+- 💼 **Pengalaman:** ~5 Tahun di bidang IT Staff (Troubleshooting network, Hardware/Software, System Administration).
+- 🌱 **Fokus Belajar Saat Ini:** Cloud Computing, Web Development dasar, dan Computer Networking, Server, Cyber Security.
+- 🎯 **Tujuan:** Menggabungkan pengalaman praktis IT dengan ilmu rekayasa perangkat lunak dan infrastruktur modern (Cloud/DevOps).
 
 ---
 
